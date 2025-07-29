@@ -185,3 +185,5 @@ Thumbs.db
 # Build outputs
 dist/
 build/ 
+
+assets/go2.mp4

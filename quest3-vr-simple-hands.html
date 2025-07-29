@@ -187,7 +187,7 @@
         const unitreeGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.3);
         const unitreeMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 }); // Gris claro
         const unitree = new THREE.Mesh(unitreeGeometry, unitreeMaterial);
-        unitree.position.set(-1.5, 0.3, -1.5); // Posicionado en el lado izquierdo, cerca del suelo
+        unitree.position.set(0.67,-0.93,1.87); // Posicionado en el centro-derecha, más cerca para ser visible
         unitree.userData = {
           name: 'Unitree Go2',
           info: 'Robot cuadrúpedo Unitree Go2. Robot perro de alta movilidad diseñado para investigación en locomoción, exploración y asistencia. Equipado con sensores avanzados y control de movimiento preciso.',
@@ -204,6 +204,10 @@
         let selectedObject = null;
         let lastSelectedObject = null; // Para rastrear el objeto anteriormente seleccionado
         let isInfoPanelOpen = false; // Para rastrear si el panel está abierto
+        let isVideoPlaying = false; // Para rastrear si el video está reproduciéndose
+        let videoScene, videoCamera; // Para la escena del video
+        let originalScene, originalCamera; // Para guardar la escena original
+        let currentVideo = null; // Para rastrear el video actual
 
         // Raycaster para detectar colisiones
         const raycaster = new THREE.Raycaster();
@@ -261,6 +265,129 @@
             scene.remove(existingPanel);
             isInfoPanelOpen = false;
           }
+        }
+
+        // Función para reproducir video 360°
+        function playVideo360() {
+          if (isVideoPlaying) return; // Evitar múltiples reproducciones
+          
+          isVideoPlaying = true;
+          debug('Iniciando video 360°...');
+          
+          // Guardar escena original
+          originalScene = scene;
+          originalCamera = camera;
+          
+          // Crear escena de video
+          videoScene = new THREE.Scene();
+          videoCamera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+          videoCamera.position.set(0, 0, 0);
+          
+          // Crear video texture
+          const video = document.createElement('video');
+          video.src = 'assets/go2.mp4';
+          video.loop = false;
+          video.muted = false; // Habilitar audio
+          video.volume = 0.7; // Volumen al 70%
+          video.crossOrigin = 'anonymous';
+          
+          // Guardar referencia al video actual
+          currentVideo = video;
+          
+          const videoTexture = new THREE.VideoTexture(video);
+          videoTexture.minFilter = THREE.LinearFilter;
+          videoTexture.magFilter = THREE.LinearFilter;
+          
+          // Crear skybox con video
+          const videoGeometry = new THREE.SphereGeometry(100, 32, 32);
+          const videoMaterial = new THREE.MeshBasicMaterial({ 
+            map: videoTexture, 
+            side: THREE.BackSide 
+          });
+          const videoSkybox = new THREE.Mesh(videoGeometry, videoMaterial);
+          videoScene.add(videoSkybox);
+          
+          // Cambiar a escena de video
+          scene = videoScene;
+          camera = videoCamera;
+          
+          // Reproducir video con audio
+          video.play().then(() => {
+            debug('Video iniciado correctamente con audio');
+          }).catch(err => {
+            debug(`Error reproduciendo video: ${err.message}`);
+            // Si falla por audio, intentar sin audio
+            video.muted = true;
+            video.play().then(() => {
+              debug('Video iniciado sin audio (fallback)');
+            }).catch(err2 => {
+              debug(`Error final: ${err2.message}`);
+            });
+          });
+          
+          // Función de render para video
+          function renderVideo() {
+            if (videoTexture.image && videoTexture.image.readyState === videoTexture.image.HAVE_ENOUGH_DATA) {
+              videoTexture.needsUpdate = true;
+            }
+            renderer.render(scene, camera);
+          }
+          
+          // Cambiar el loop de animación
+          if (renderer.xr.isPresenting) {
+            renderer.setAnimationLoop(renderVideo);
+          } else {
+            const videoAnimationLoop = () => {
+              renderVideo();
+              if (isVideoPlaying) {
+                requestAnimationFrame(videoAnimationLoop);
+              }
+            };
+            videoAnimationLoop();
+          }
+          
+          // Detener después de 20 segundos
+          setTimeout(() => {
+            stopVideo360();
+          }, 20000);
+        }
+
+        // Función para detener video y regresar a escena principal
+        function stopVideo360() {
+          if (!isVideoPlaying) return;
+          
+          isVideoPlaying = false;
+          debug('Regresando a escena principal...');
+          
+          // Detener y limpiar el video
+          if (currentVideo) {
+            currentVideo.pause();
+            currentVideo.currentTime = 0;
+            currentVideo.src = '';
+            currentVideo.load();
+            currentVideo = null;
+          }
+          
+          // Restaurar escena original
+          scene = originalScene;
+          camera = originalCamera;
+          
+          // Limpiar recursos de video
+          if (videoScene) {
+            videoScene.traverse((object) => {
+              if (object.material) {
+                object.material.dispose();
+              }
+              if (object.geometry) {
+                object.geometry.dispose();
+              }
+            });
+            videoScene = null;
+          }
+          
+          videoCamera = null;
+          originalScene = null;
+          originalCamera = null;
         }
 
         // Función para mostrar información del objeto
@@ -336,6 +463,22 @@
             const textMesh = new THREE.Mesh(textGeometry, textMaterial);
             panelGroup.add(textMesh);
             
+            // Crear botón de video solo para Unitree Go2
+            if (object.userData.name === 'Unitree Go2') {
+              const buttonGeometry = new THREE.PlaneGeometry(0.4, 0.15);
+              const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+              const videoButton = new THREE.Mesh(buttonGeometry, buttonMaterial);
+              videoButton.name = 'videoButton';
+              videoButton.userData = { type: 'videoButton', object: object };
+              
+              // Posicionar el botón debajo del panel
+              videoButton.position.set(0, -0.6, 0);
+              panelGroup.add(videoButton);
+              
+              // Agregar el botón a la lista de interactivos
+              interactables.push(videoButton);
+            }
+            
             // Posicionar el panel cerca del objeto
             const objectPosition = object.position.clone();
             panelGroup.position.copy(objectPosition);
@@ -362,8 +505,11 @@
           // Detectar objetos intersectados
           const intersects = raycaster.intersectObjects(interactables);
           
+          debug(`Objetos intersectados: ${intersects.length}`);
+          
           if (intersects.length > 0) {
             const hitObject = intersects[0].object;
+            debug(`Objeto golpeado: ${hitObject.name || 'sin nombre'}`);
             
             // Si es el cubo principal, permitir agarrarlo
             if (hitObject === cube) {
@@ -371,6 +517,16 @@
               controller.attach(grabbedObject);
               debug('Cubo agarrado');
               grabbedObject.material.color.setHex(0xff0000); // Rojo cuando agarrado
+            } else if (hitObject.name === 'videoButton') {
+              // Si es el botón de video, reproducir video
+              debug('Botón de video presionado - iniciando video');
+              playVideo360();
+              
+              // Efecto visual del botón
+              hitObject.material.color.setHex(0xffff00); // Amarillo temporal
+              setTimeout(() => {
+                hitObject.material.color.setHex(0x00ff00); // Volver a verde
+              }, 200);
             } else {
               // Si es un objeto estático, manejar toggle de información
               if (selectedObject === hitObject) {
@@ -435,6 +591,9 @@
                 if (hitObject === cube) {
                   cursor.material.color.setHex(0x00ff00); // Verde para cubo móvil
                   line.material.color.setHex(0x00ff00);
+                } else if (hitObject.name === 'videoButton') {
+                  cursor.material.color.setHex(0xff0000); // Rojo para botón de video
+                  line.material.color.setHex(0xff0000);
                 } else {
                   cursor.material.color.setHex(0xffff00); // Amarillo para objetos informativos
                   line.material.color.setHex(0xffff00);
@@ -453,14 +612,41 @@
           });
         }
 
+        // Función para mostrar coordenadas de objetos
+        function showObjectCoordinates() {
+          const coordinates = [];
+          
+          // Coordenadas del cubo
+          coordinates.push(`Cubo: (${cube.position.x.toFixed(2)}, ${cube.position.y.toFixed(2)}, ${cube.position.z.toFixed(2)})`);
+          
+          // Coordenadas de Pepper
+          coordinates.push(`Pepper: (${pepper.position.x.toFixed(2)}, ${pepper.position.y.toFixed(2)}, ${pepper.position.z.toFixed(2)})`);
+          
+          // Coordenadas de Unitree
+          coordinates.push(`Unitree: (${unitree.position.x.toFixed(2)}, ${unitree.position.y.toFixed(2)}, ${unitree.position.z.toFixed(2)})`);
+          
+          // Mostrar en debug
+          debug(`Posiciones: ${coordinates.join(' | ')}`);
+        }
+
+        // Función para actualizar coordenadas cada segundo
+        function updateCoordinates() {
+          if (!isVideoPlaying) {
+            showObjectCoordinates();
+          }
+        }
+
+        // Actualizar coordenadas cada segundo
+        setInterval(updateCoordinates, 1000);
+
+        // Variable para controlar la animación
+        let animationId = null;
+
         // Agregar eventos a ambos controladores
         controller1.addEventListener('selectstart', onSelectStart);
         controller1.addEventListener('selectend', onSelectEnd);
         controller2.addEventListener('selectstart', onSelectStart);
         controller2.addEventListener('selectend', onSelectEnd);
-
-        // Variable para controlar la animación
-        let animationId = null;
 
         // Función de animación que funciona en ambos modos
         function animate() {
