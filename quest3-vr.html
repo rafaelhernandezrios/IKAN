@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio Mirai - Simple</title>
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .vr-button {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        .debug-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Info Panel -->
+    <div class="info-panel">
+        <h3>🥽 Laboratorio Mirai - Simple</h3>
+        <p>Versión mínima para Quest 3</p>
+        <p id="webxrStatus">Verificando WebXR...</p>
+    </div>
+
+    <!-- VR Entry Button -->
+    <button class="vr-button" onclick="enterVR()" id="vrButton">
+        🥽 ENTRAR VR
+    </button>
+
+    <!-- Debug Info -->
+    <div class="debug-info" id="debugInfo">
+        Debug: Esperando...
+    </div>
+
+    <script>
+        let scene, camera, renderer, vrSession;
+
+        // Check WebXR support
+        function checkWebXR() {
+            const statusEl = document.getElementById('webxrStatus');
+            
+            if (navigator.xr) {
+                navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+                    if (supported) {
+                        statusEl.textContent = '✅ WebXR VR soportado';
+                        statusEl.style.color = '#10b981';
+                        document.getElementById('vrButton').style.display = 'block';
+                    } else {
+                        statusEl.textContent = '❌ WebXR VR no soportado';
+                        statusEl.style.color = '#ef4444';
+                        document.getElementById('vrButton').style.display = 'none';
+                    }
+                });
+            } else {
+                statusEl.textContent = '❌ WebXR no disponible';
+                statusEl.style.color = '#ef4444';
+                document.getElementById('vrButton').style.display = 'none';
+            }
+        }
+
+        // Initialize Three.js scene
+        function initScene() {
+            // Create scene
+            scene = new THREE.Scene();
+            
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 1.6, 0);
+            
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: false
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setClearColor(0x87CEEB, 1);
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+            
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+            scene.add(ambientLight);
+            
+            // Create skybox
+            const geometry = new THREE.SphereGeometry(100, 32, 32);
+            const textureLoader = new THREE.TextureLoader();
+            
+            textureLoader.load('assets/mirai_lab.jpg', function(texture) {
+                const material = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.BackSide
+                });
+                const skybox = new THREE.Mesh(geometry, material);
+                scene.add(skybox);
+            });
+            
+            // Start render loop
+            animate();
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+
+        // Enter VR - Minimal approach
+        async function enterVR() {
+            const debugEl = document.getElementById('debugInfo');
+            debugEl.textContent = 'Debug: Iniciando VR...';
+            
+            try {
+                document.getElementById('vrButton').style.display = 'none';
+                
+                if (navigator.xr) {
+                    debugEl.textContent = 'Debug: Solicitando sesión...';
+                    
+                    vrSession = await navigator.xr.requestSession('immersive-vr', {
+                        optionalFeatures: ['local-floor'],
+                        requiredFeatures: ['local']
+                    });
+                    
+                    debugEl.textContent = 'Debug: Configurando renderer...';
+                    
+                    // Set up VR rendering
+                    renderer.xr.setReferenceSpaceType('local');
+                    await renderer.xr.setSession(vrSession);
+                    
+                    debugEl.textContent = 'Debug: VR activo!';
+                    
+                    // Simple VR animation loop
+                    renderer.setAnimationLoop(function(time, frame) {
+                        renderer.render(scene, camera);
+                    });
+                    
+                    setTimeout(() => {
+                        debugEl.style.display = 'none';
+                    }, 3000);
+                    
+                } else {
+                    throw new Error('WebXR not available');
+                }
+                
+            } catch (error) {
+                console.error('Error entering VR:', error);
+                debugEl.textContent = `Debug: Error - ${error.message}`;
+                showError(`Error: ${error.message}`);
+            }
+        }
+
+        // Show error
+        function showError(message) {
+            const error = document.createElement('div');
+            error.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.9);
+                color: white;
+                padding: 30px;
+                border-radius: 15px;
+                text-align: center;
+                z-index: 2000;
+            `;
+            error.innerHTML = `
+                <h3>⚠️ Error</h3>
+                <p>${message}</p>
+                <button onclick="this.parentElement.remove()" style="margin-top: 20px; padding: 10px 20px; background: #1e3a8a; color: white; border: none; border-radius: 5px;">Entendido</button>
+            `;
+            document.body.appendChild(error);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkWebXR();
+            initScene();
+        });
+    </script>
+</body>
+</html> 

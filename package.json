@@ -1,0 +1,34 @@
+{
+  "name": "gca-virtual",
+  "version": "1.0.0",
+  "description": "Plataforma educativa web con experiencias de realidad virtual",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -p 8000",
+    "dev": "npx live-server --port=8000",
+    "build": "echo 'No build step required for static HTML/CSS/JS'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "keywords": [
+    "education",
+    "virtual-reality",
+    "webxr",
+    "dashboard",
+    "badges",
+    "responsive"
+  ],
+  "author": "GCA Virtual Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0",
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/gca-virtual.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/gca-virtual/issues"
+  },
+  "homepage": "https://github.com/your-username/gca-virtual#readme"
+} 

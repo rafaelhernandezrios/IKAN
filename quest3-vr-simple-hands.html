@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Laboratorio Mirai – Interactivo VR</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+    .info-panel {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.9);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 1000;
+      max-width: 400px;
+    }
+    .vr-button {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      background: #1e3a8a;
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      font-size: 24px;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    .debug-info {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      z-index: 1000;
+      max-width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="info-panel">
+    <h3>🥽 Laboratorio Mirai – Interactivo VR</h3>
+    <p>Versión para Quest 3 con interacción de agarrar objetos</p>
+    <p id="webxrStatus">Verificando WebXR…</p>
+  </div>
+
+  <button id="vrButton" class="vr-button" onclick="enterVR()">
+    🥽 ENTRAR VR
+  </button>
+
+  <div id="debugInfo" class="debug-info">Debug: Cargando...</div>
+
+  <script>
+    // Debug inmediato
+    console.log('Script iniciado');
+    document.getElementById('debugInfo').textContent = 'Debug: Script cargado';
+    
+    // Variables globales
+    let scene, camera, renderer, vrSession;
+    const debugEl = document.getElementById('debugInfo');
+    const statusEl = document.getElementById('webxrStatus');
+    const vrButton = document.getElementById('vrButton');
+
+    // Función simple de debug
+    function debug(message) {
+      console.log('Debug:', message);
+      debugEl.textContent = `Debug: ${message}`;
+    }
+
+    // Verificar WebXR de forma simple
+    function checkWebXR() {
+      debug('Verificando WebXR...');
+      
+      if (!navigator.xr) {
+        statusEl.textContent = '❌ WebXR no disponible';
+        statusEl.style.color = '#ef4444';
+        debug('WebXR no disponible');
+        return false;
+      }
+
+      navigator.xr.isSessionSupported('immersive-vr')
+        .then(supported => {
+          if (supported) {
+            statusEl.textContent = '✅ WebXR VR soportado';
+            statusEl.style.color = '#10b981';
+            vrButton.style.display = 'block';
+            debug('VR soportado');
+          } else {
+            statusEl.textContent = '❌ WebXR VR no soportado';
+            statusEl.style.color = '#ef4444';
+            debug('VR no soportado');
+          }
+        })
+        .catch(err => {
+          statusEl.textContent = '❌ Error verificando WebXR';
+          debug(`Error: ${err.message}`);
+        });
+    }
+
+    // Inicializar escena básica
+    function initScene() {
+      debug('Inicializando escena...');
+      
+      try {
+        // Crear escena básica
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 1.6, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x87CEEB, 1);
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // Luz básica
+        const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+        scene.add(ambient);
+
+        // Skybox 360° con la imagen de Mirai Lab
+        const skyboxGeometry = new THREE.SphereGeometry(100, 32, 32);
+        const textureLoader = new THREE.TextureLoader();
+        
+        textureLoader.load('assets/mirai_lab.jpg', 
+          (texture) => {
+            // Skybox exitoso
+            const skyboxMaterial = new THREE.MeshBasicMaterial({ 
+              map: texture, 
+              side: THREE.BackSide 
+            });
+            const skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+            scene.add(skybox);
+            debug('Skybox Mirai Lab cargado correctamente');
+          },
+          undefined, // Progress callback
+          (error) => {
+            // Fallback si no carga la imagen
+            console.error('Error cargando skybox:', error);
+            debug('Error cargando skybox, usando color sólido');
+            const fallbackMaterial = new THREE.MeshBasicMaterial({ 
+              color: 0x87CEEB, 
+              side: THREE.BackSide 
+            });
+            const fallbackSkybox = new THREE.Mesh(skyboxGeometry, fallbackMaterial);
+            scene.add(fallbackSkybox);
+          }
+        );
+
+        // Un cubo interactivo
+        const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(0, 1.6, -2);
+        scene.add(cube);
+
+        // Crear objetos interactivos estáticos que representan elementos del laboratorio
+        const staticObjects = [];
+
+        // Robot Pepper (robot blanco)
+        const pepperGeometry = new THREE.BoxGeometry(0.3, 0.6, 0.3);
+        const pepperMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const pepper = new THREE.Mesh(pepperGeometry, pepperMaterial);
+        pepper.position.set(1.8, 0.8, -2.8); // Bajado de 1.2 a 0.8
+        pepper.userData = {
+          name: 'Pepper Robot',
+          info: 'Robot humanoide Pepper de SoftBank Robotics. Diseñado para interacción social y asistencia en entornos comerciales y educativos.',
+          type: 'robot'
+        };
+        scene.add(pepper);
+        staticObjects.push(pepper);
+
+        // Robot Unitree Go2 (perro robot)
+        const unitreeGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.3);
+        const unitreeMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 }); // Gris claro
+        const unitree = new THREE.Mesh(unitreeGeometry, unitreeMaterial);
+        unitree.position.set(-1.5, 0.3, -1.5); // Posicionado en el lado izquierdo, cerca del suelo
+        unitree.userData = {
+          name: 'Unitree Go2',
+          info: 'Robot cuadrúpedo Unitree Go2. Robot perro de alta movilidad diseñado para investigación en locomoción, exploración y asistencia. Equipado con sensores avanzados y control de movimiento preciso.',
+          type: 'robot'
+        };
+        scene.add(unitree);
+        staticObjects.push(unitree);
+
+        // Agregar todos los objetos a la lista de interactivos
+        const interactables = [cube, ...staticObjects];
+
+        // Variables para interacción
+        let grabbedObject = null;
+        let selectedObject = null;
+        let lastSelectedObject = null; // Para rastrear el objeto anteriormente seleccionado
+        let isInfoPanelOpen = false; // Para rastrear si el panel está abierto
+
+        // Raycaster para detectar colisiones
+        const raycaster = new THREE.Raycaster();
+        const tempMatrix = new THREE.Matrix4();
+
+        // Configurar controladores VR
+        const controller1 = renderer.xr.getController(0); // Controlador derecho
+        const controller2 = renderer.xr.getController(1); // Controlador izquierdo
+        scene.add(controller1);
+        scene.add(controller2);
+
+        // Crear indicadores visuales para los controladores
+        function createControllerGrip(controller) {
+          const geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, -1)
+          ]);
+          const line = new THREE.Line(geometry);
+          line.name = 'line';
+          line.scale.z = 5;
+          controller.add(line);
+        }
+
+        function createControllerCursor(controller) {
+          const geometry = new THREE.RingGeometry(0.02, 0.04, 32);
+          const material = new THREE.MeshBasicMaterial();
+          const cursor = new THREE.Mesh(geometry, material);
+          cursor.name = 'cursor';
+          cursor.visible = false;
+          controller.add(cursor);
+        }
+
+        // Agregar indicadores a ambos controladores
+        createControllerGrip(controller1);
+        createControllerCursor(controller1);
+        createControllerGrip(controller2);
+        createControllerCursor(controller2);
+
+        // Función para restaurar colores originales
+        function restoreOriginalColors() {
+          if (lastSelectedObject) {
+            if (lastSelectedObject === cube) {
+              lastSelectedObject.material.color.setHex(0xffaa00); // Amarillo para cubo
+            } else {
+              lastSelectedObject.material.color.setHex(0xffffff); // Blanco para Pepper
+            }
+            lastSelectedObject = null;
+          }
+        }
+
+        // Función para cerrar panel de información
+        function closeInfoPanel() {
+          const existingPanel = scene.getObjectByName('infoPanel');
+          if (existingPanel) {
+            scene.remove(existingPanel);
+            isInfoPanelOpen = false;
+          }
+        }
+
+        // Función para mostrar información del objeto
+        function showObjectInfo(object) {
+          if (object.userData && object.userData.name) {
+            debug(`INFO: ${object.userData.name}`);
+            
+            // Remover panel anterior si existe
+            closeInfoPanel();
+            
+            // Crear panel 3D de información
+            const panelGroup = new THREE.Group();
+            panelGroup.name = 'infoPanel';
+            
+            // Fondo del panel
+            const panelGeometry = new THREE.PlaneGeometry(1.5, 0.8);
+            const panelMaterial = new THREE.MeshBasicMaterial({ 
+              color: 0x000000, 
+              transparent: true, 
+              opacity: 0.9 
+            });
+            const panel = new THREE.Mesh(panelGeometry, panelMaterial);
+            panelGroup.add(panel);
+            
+            // Crear canvas para el texto
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            
+            // Configurar el canvas
+            context.fillStyle = '#000000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar texto
+            context.fillStyle = '#ffffff';
+            context.font = 'bold 32px Arial';
+            context.textAlign = 'center';
+            
+            // Título
+            context.fillText(object.userData.name, canvas.width/2, 50);
+            
+            // Información (dividida en líneas)
+            context.font = '20px Arial';
+            const words = object.userData.info.split(' ');
+            let lines = [];
+            let currentLine = '';
+            
+            for (let word of words) {
+              const testLine = currentLine + word + ' ';
+              if (context.measureText(testLine).width > canvas.width - 40) {
+                lines.push(currentLine);
+                currentLine = word + ' ';
+              } else {
+                currentLine = testLine;
+              }
+            }
+            lines.push(currentLine);
+            
+            // Dibujar líneas de información
+            lines.forEach((line, index) => {
+              context.fillText(line, canvas.width/2, 90 + (index * 30));
+            });
+            
+            // Crear textura del canvas
+            const texture = new THREE.CanvasTexture(canvas);
+            const textGeometry = new THREE.PlaneGeometry(1.5, 0.8);
+            const textMaterial = new THREE.MeshBasicMaterial({ 
+              map: texture,
+              transparent: true,
+              side: THREE.DoubleSide
+            });
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+            panelGroup.add(textMesh);
+            
+            // Posicionar el panel cerca del objeto
+            const objectPosition = object.position.clone();
+            panelGroup.position.copy(objectPosition);
+            panelGroup.position.y += 1; // Elevar un poco
+            panelGroup.position.z += 0.5; // Acercar a la cámara
+            
+            // Hacer que el panel mire hacia la cámara
+            panelGroup.lookAt(camera.position);
+            
+            scene.add(panelGroup);
+            isInfoPanelOpen = true;
+          }
+        }
+
+        // Función para manejar selección (agarrar o seleccionar)
+        function onSelectStart(event) {
+          const controller = event.target;
+          
+          // Configurar raycaster desde el controlador
+          tempMatrix.identity().extractRotation(controller.matrixWorld);
+          raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+          raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+
+          // Detectar objetos intersectados
+          const intersects = raycaster.intersectObjects(interactables);
+          
+          if (intersects.length > 0) {
+            const hitObject = intersects[0].object;
+            
+            // Si es el cubo principal, permitir agarrarlo
+            if (hitObject === cube) {
+              grabbedObject = hitObject;
+              controller.attach(grabbedObject);
+              debug('Cubo agarrado');
+              grabbedObject.material.color.setHex(0xff0000); // Rojo cuando agarrado
+            } else {
+              // Si es un objeto estático, manejar toggle de información
+              if (selectedObject === hitObject) {
+                // Si ya está seleccionado, deseleccionarlo
+                closeInfoPanel();
+                hitObject.material.color.setHex(0xffffff); // Volver a blanco
+                selectedObject = null;
+                lastSelectedObject = null;
+                debug('Deseleccionado');
+              } else {
+                // Si no está seleccionado, seleccionarlo
+                // Restaurar color del objeto anteriormente seleccionado
+                if (selectedObject) {
+                  selectedObject.material.color.setHex(0xffffff); // Blanco para Pepper
+                }
+                
+                selectedObject = hitObject;
+                showObjectInfo(selectedObject);
+                debug(`Seleccionado: ${selectedObject.userData.name}`);
+                
+                // Mantener color verde mientras está seleccionado
+                selectedObject.material.color.setHex(0x00ff00); // Verde
+                lastSelectedObject = selectedObject;
+              }
+            }
+          }
+        }
+
+        // Función para manejar fin de selección (soltar)
+        function onSelectEnd(event) {
+          if (grabbedObject) {
+            scene.attach(grabbedObject);
+            grabbedObject = null;
+            debug('Cubo soltado');
+            cube.material.color.setHex(0xffaa00); // Restaurar color amarillo
+          }
+        }
+
+        // Función para actualizar indicadores visuales
+        function updateControllerIndicators() {
+          [controller1, controller2].forEach(controller => {
+            const line = controller.getObjectByName('line');
+            const cursor = controller.getObjectByName('cursor');
+            
+            if (line && cursor) {
+              // Configurar raycaster
+              tempMatrix.identity().extractRotation(controller.matrixWorld);
+              raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+              raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+
+              // Detectar objetos
+              const intersects = raycaster.intersectObjects(interactables);
+              
+              if (intersects.length > 0) {
+                // Mostrar cursor en el punto de intersección
+                cursor.position.copy(intersects[0].point);
+                cursor.lookAt(controller.position);
+                cursor.visible = true;
+                
+                // Cambiar color según el tipo de objeto
+                const hitObject = intersects[0].object;
+                if (hitObject === cube) {
+                  cursor.material.color.setHex(0x00ff00); // Verde para cubo móvil
+                  line.material.color.setHex(0x00ff00);
+                } else {
+                  cursor.material.color.setHex(0xffff00); // Amarillo para objetos informativos
+                  line.material.color.setHex(0xffff00);
+                }
+                
+                line.scale.z = intersects[0].distance;
+              } else {
+                // Ocultar cursor si no hay objetos
+                cursor.visible = false;
+                
+                // Color normal para el rayo
+                line.material.color.setHex(0xffffff);
+                line.scale.z = 5;
+              }
+            }
+          });
+        }
+
+        // Agregar eventos a ambos controladores
+        controller1.addEventListener('selectstart', onSelectStart);
+        controller1.addEventListener('selectend', onSelectEnd);
+        controller2.addEventListener('selectstart', onSelectStart);
+        controller2.addEventListener('selectend', onSelectEnd);
+
+        // Variable para controlar la animación
+        let animationId = null;
+
+        // Función de animación que funciona en ambos modos
+        function animate() {
+          // Rotar el cubo solo si no está agarrado
+          if (!grabbedObject) {
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+          }
+          
+          // Actualizar indicadores visuales
+          updateControllerIndicators();
+          
+          // Renderizar
+          renderer.render(scene, camera);
+          
+          // Continuar animación solo en modo no-VR
+          if (!renderer.xr.isPresenting) {
+            animationId = requestAnimationFrame(animate);
+          }
+        }
+
+        // Iniciar animación no-VR
+        animate();
+
+        // Manejar entrada/salida de VR
+        renderer.xr.addEventListener('sessionstart', () => {
+          debug('Sesión VR iniciada - Usa el gatillo para agarrar el cubo');
+        });
+
+        renderer.xr.addEventListener('sessionend', () => {
+          debug('Sesión VR terminada');
+          // Reanudar animación no-VR
+          animate();
+        });
+
+        debug('Escena interactiva lista');
+      } catch (err) {
+        debug(`Error en escena: ${err.message}`);
+        console.error(err);
+      }
+    }
+
+    // Función para entrar en VR
+    async function enterVR() {
+      debug('Intentando entrar en VR...');
+      
+      if (!navigator.xr) {
+        debug('WebXR no disponible');
+        return;
+      }
+
+      try {
+        vrButton.style.display = 'none';
+        
+        const session = await navigator.xr.requestSession('immersive-vr', {
+          optionalFeatures: ['local-floor', 'bounded-floor'],
+          requiredFeatures: ['local']
+        });
+
+        await renderer.xr.setSession(session);
+        renderer.xr.setReferenceSpaceType('local');
+        
+        debug('VR activo - Agarra el cubo con el gatillo');
+        
+        // Configurar el loop de animación para VR
+        renderer.setAnimationLoop((time, frame) => {
+          // La rotación se maneja en la función animate()
+          renderer.render(scene, camera);
+        });
+      } catch (err) {
+        debug(`Error VR: ${err.message}`);
+        vrButton.style.display = 'block';
+        console.error(err);
+      }
+    }
+
+    // Inicialización cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+      debug('DOM listo');
+      
+      // Cargar Three.js dinámicamente
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/three@0.151.0/build/three.min.js';
+      script.onload = function() {
+        debug('Three.js cargado');
+        window.THREE = THREE;
+        checkWebXR();
+        initScene();
+        debug('Inicialización completa');
+      };
+      script.onerror = function() {
+        debug('Error cargando Three.js');
+      };
+      document.head.appendChild(script);
+    });
+
+    // Hacer enterVR global
+    window.enterVR = enterVR;
+  </script>
+</body>
+</html>
