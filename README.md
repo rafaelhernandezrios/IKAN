@@ -14,8 +14,9 @@ Una plataforma educativa web con experiencia VR inmersiva para Oculus Quest 3.
 
 ```
 IKAN_VR/
-├── 📄 index.html                    # Página de login
+├── 📄 index.html                    # Landing page principal
 ├── 📁 pages/                        # Páginas de la aplicación
+│   ├── 📄 login.html                # Página de login
 │   ├── 📄 dashboard.html            # Dashboard principal
 │   ├── 📄 badges.html               # Página de badges
 │   └── 📁 vr/                       # Experiencias VR
@@ -110,14 +111,16 @@ Para acceder al sistema, usa estas credenciales:
 ### Dashboard
 - ✅ Información de sesión del mes
 - ✅ Sistema de badges/logros
-- ✅ Botón para entrar a VR
+- ✅ Menú de Tours VR (Japón, México, Francia)
 - ✅ Diseño responsive
+- ✅ Función de cerrar sesión
 
 ### VR Experience
 - ✅ Carga sin colgarse
 - ✅ Imagen 360° visible
 - ✅ Compatible con Quest 3
 - ✅ Renderizado estable
+- ✅ Múltiples tours disponibles (Japón, México, Francia)
 
 ## 🔧 Tecnologías
 

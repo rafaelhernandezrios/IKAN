@@ -98,11 +98,11 @@ function initializeAnimations() {
  * Set up event listeners
  */
 function setupEventListeners() {
-    // Enter VR button
-    const enterVRBtn = document.getElementById('enterVRBtn');
-    if (enterVRBtn) {
-        enterVRBtn.addEventListener('click', function() {
-            startVRSession();
+    // VR Tours button
+    const openVRToursBtn = document.getElementById('openVRToursBtn');
+    if (openVRToursBtn) {
+        openVRToursBtn.addEventListener('click', function() {
+            openVRToursModal();
         });
     }
 
@@ -137,6 +137,15 @@ function setupEventListeners() {
     if (exportBtn) {
         exportBtn.addEventListener('click', function() {
             exportUserData();
+        });
+    }
+
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleLogout();
         });
     }
 }
@@ -262,22 +271,96 @@ function createDashboardBadgeElement(badge) {
 }
 
 /**
- * Start VR session
+ * Open VR Tours Modal
  */
-function startVRSession() {
-    // Show loading state
-    const enterVRBtn = document.getElementById('enterVRBtn');
-    if (enterVRBtn) {
-        const originalText = enterVRBtn.innerHTML;
-        enterVRBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-        enterVRBtn.disabled = true;
+function openVRToursModal() {
+    const modal = document.getElementById('vrToursModal');
+    if (modal) {
+        modal.classList.add('active');
         
-        // Simulate loading
+        // Setup modal event listeners
+        setupModalEventListeners();
+    }
+}
+
+/**
+ * Setup modal event listeners
+ */
+function setupModalEventListeners() {
+    // Close button
+    const closeBtn = document.getElementById('closeVRToursModal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeVRToursModal);
+    }
+    
+    // Close on overlay click
+    const modal = document.getElementById('vrToursModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeVRToursModal();
+            }
+        });
+    }
+    
+    // Tour cards
+    const tourCards = document.querySelectorAll('.tour-card');
+    tourCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const tourType = this.dataset.tour;
+            startVRSession(tourType);
+        });
+    });
+}
+
+/**
+ * Close VR Tours Modal
+ */
+function closeVRToursModal() {
+    const modal = document.getElementById('vrToursModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+/**
+ * Start VR session with specific tour
+ */
+function startVRSession(tourType = 'japan') {
+    // Show loading state
+    const openVRToursBtn = document.getElementById('openVRToursBtn');
+    if (openVRToursBtn) {
+        const originalText = openVRToursBtn.innerHTML;
+        openVRToursBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        openVRToursBtn.disabled = true;
+        
+        // Close modal
+        closeVRToursModal();
+        
+        // Show notification
+        showNotification(`Iniciando tour de ${getTourName(tourType)}...`, 'info');
+        
+        // Simulate loading and redirect
         setTimeout(() => {
-                    // Redirect to VR experience
-        window.location.href = 'vr/quest3-vr-simple-hands.html';
+            // Store selected tour in localStorage for VR experience
+            localStorage.setItem('gca_virtual_selected_tour', tourType);
+            
+            // Redirect to VR experience
+            window.location.href = 'vr/quest3-vr-simple-hands.html';
         }, 1500);
     }
+}
+
+/**
+ * Get tour name by type
+ */
+function getTourName(tourType) {
+    const tourNames = {
+        'japan': 'Japón',
+        'mexico': 'México',
+        'france': 'Francia'
+    };
+    return tourNames[tourType] || 'Japón';
 }
 
 /**
@@ -393,4 +476,34 @@ window.resetBadges = function() {
     updateBadgesDisplay();
     console.log('Badges reset to default state');
     console.log('Unlocked badges:', badgeSystem.getUnlockedBadges().map(b => b.name));
-}; 
+};
+
+/**
+ * Handle user logout
+ */
+function handleLogout() {
+    // Show confirmation dialog
+    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        // Show loading state
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            const originalText = logoutBtn.innerHTML;
+            logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Cerrando...</span>';
+            logoutBtn.style.pointerEvents = 'none';
+            
+            // Simulate logout process
+            setTimeout(() => {
+                // Clear user data
+                auth.logout();
+                
+                // Show success message
+                showNotification('Sesión cerrada exitosamente', 'success');
+                
+                // Redirect to landing page after a short delay
+                setTimeout(() => {
+                    window.location.href = '../index.html';
+                }, 1500);
+            }, 1000);
+        }
+    }
+} 

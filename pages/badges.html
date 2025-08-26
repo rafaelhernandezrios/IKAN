@@ -258,6 +258,12 @@
                     <span>Settings</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </li>
         </ul>
         
         <div class="sidebar-footer">
@@ -423,6 +429,68 @@
 
         // Expose for testing
         window.unlockTestBadge = unlockTestBadge;
+        
+        // Setup logout functionality
+        setupLogout();
+        
+        /**
+         * Setup logout functionality
+         */
+        function setupLogout() {
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleLogout();
+                });
+            }
+        }
+        
+        /**
+         * Handle user logout
+         */
+        function handleLogout() {
+            // Show confirmation dialog
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                // Show loading state
+                const logoutBtn = document.getElementById('logoutBtn');
+                if (logoutBtn) {
+                    const originalText = logoutBtn.innerHTML;
+                    logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Cerrando...</span>';
+                    logoutBtn.style.pointerEvents = 'none';
+                    
+                    // Simulate logout process
+                    setTimeout(() => {
+                        // Clear user data
+                        auth.logout();
+                        
+                        // Show success message
+                        const notification = document.createElement('div');
+                        notification.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            background: #10b981;
+                            color: white;
+                            padding: 12px 20px;
+                            border-radius: 8px;
+                            z-index: 10000;
+                            font-weight: 500;
+                        `;
+                        notification.textContent = 'Sesión cerrada exitosamente';
+                        document.body.appendChild(notification);
+                        
+                        // Remove notification and redirect
+                        setTimeout(() => {
+                            if (notification.parentNode) {
+                                notification.remove();
+                            }
+                            window.location.href = '../index.html';
+                        }, 1500);
+                    }, 1000);
+                }
+            }
+        }
     </script>
 </body>
 </html>

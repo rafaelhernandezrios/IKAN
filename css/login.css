@@ -118,6 +118,27 @@
     text-decoration: underline;
 }
 
+/* Back link */
+.back-link {
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--light-gray);
+}
+
+.back-link a {
+    color: var(--gray);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    transition: color 0.2s ease;
+}
+
+.back-link a:hover {
+    color: var(--primary-blue);
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 480px) {
     .login-container {

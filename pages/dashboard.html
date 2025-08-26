@@ -42,6 +42,12 @@
                     <span>Settings</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </li>
         </ul>
         
         <div class="sidebar-footer">
@@ -99,9 +105,9 @@
             
             <div class="quick-actions-card">
                 <div class="card-title">Quick Actions</div>
-                <button class="btn-primary" id="enterVRBtn">
-                    <i class="fas fa-vr-cardboard"></i>
-                    Enter VR
+                <button class="btn-primary" id="openVRToursBtn">
+                    <i class="fas fa-globe"></i>
+                    Tours VR
                 </button>
                 <button class="btn-secondary">
                     <i class="fas fa-download"></i>
@@ -170,6 +176,72 @@
              </div>
         </div>
     </main>
+
+    <!-- VR Tours Modal -->
+    <div id="vrToursModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🌍 Tours VR Disponibles</h2>
+                <button class="modal-close" id="closeVRToursModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="tours-grid">
+                    <div class="tour-card" data-tour="japan">
+                        <div class="tour-image">
+                            <img src="../assets/japan-preview.jpg" alt="Japón" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=Japón'">
+                            <div class="tour-overlay">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="tour-info">
+                            <h3>🇯🇵 Japón</h3>
+                            <p>Explora el Laboratorio Mirai Innovation en Japón</p>
+                            <div class="tour-stats">
+                                <span><i class="fas fa-clock"></i> 15 min</span>
+                                <span><i class="fas fa-star"></i> 4.8</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tour-card" data-tour="mexico">
+                        <div class="tour-image">
+                            <img src="../assets/mexico-preview.jpg" alt="México" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=México'">
+                            <div class="tour-overlay">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="tour-info">
+                            <h3>🇲🇽 México</h3>
+                            <p>Descubre la innovación tecnológica en México</p>
+                            <div class="tour-stats">
+                                <span><i class="fas fa-clock"></i> 12 min</span>
+                                <span><i class="fas fa-star"></i> 4.6</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tour-card" data-tour="france">
+                        <div class="tour-image">
+                            <img src="../assets/france-preview.jpg" alt="Francia" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=Francia'">
+                            <div class="tour-overlay">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="tour-info">
+                            <h3>🇫🇷 Francia</h3>
+                            <p>Visita centros de investigación en Francia</p>
+                            <div class="tour-stats">
+                                <span><i class="fas fa-clock"></i> 18 min</span>
+                                <span><i class="fas fa-star"></i> 4.7</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="../js/auth.js"></script>
     <script src="../js/badges.js"></script>

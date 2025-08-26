@@ -64,9 +64,24 @@ class Auth {
      * Logout user
      */
     logout() {
+        // Clear all user-related data
         localStorage.removeItem(this.storageKey);
+        localStorage.removeItem('gca_virtual_badges_reset');
+        
+        // Clear any other session data
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('gca_virtual_')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
         this.isAuthenticated = false;
-        window.location.href = 'index.html';
+        
+        // Don't redirect here - let the calling function handle it
+        console.log('User logged out successfully');
     }
 
     /**
@@ -95,7 +110,7 @@ class Auth {
      */
     redirectIfAuthenticated() {
         if (this.isAuthenticated) {
-            window.location.href = 'pages/dashboard.html';
+            window.location.href = 'dashboard.html';
         }
     }
 }

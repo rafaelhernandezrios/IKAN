@@ -54,7 +54,7 @@
 <body>
   <div class="info-panel">
     <h3>🥽 Laboratorio Mirai – Interactivo VR</h3>
-    <p>Versión para Quest 3 con interacción de agarrar objetos</p>
+    <p id="tourInfo">Cargando tour...</p>
     <p id="webxrStatus">Verificando WebXR…</p>
   </div>
 
@@ -73,7 +73,34 @@
     let scene, camera, renderer, vrSession;
     const debugEl = document.getElementById('debugInfo');
     const statusEl = document.getElementById('webxrStatus');
+    const tourInfoEl = document.getElementById('tourInfo');
     const vrButton = document.getElementById('vrButton');
+    
+    // Get selected tour
+    const selectedTour = localStorage.getItem('gca_virtual_selected_tour') || 'japan';
+    
+    // Tour configurations
+    const tourConfigs = {
+        japan: {
+            name: '🇯🇵 Japón - Laboratorio Mirai',
+            description: 'Explora el Laboratorio Mirai Innovation en Japón',
+            skyboxImage: '../../assets/mirai_lab.jpg'
+        },
+        mexico: {
+            name: '🇲🇽 México - Centro de Innovación',
+            description: 'Descubre la innovación tecnológica en México',
+            skyboxImage: '../../assets/mirai_lab.jpg' // Same for now, can be changed later
+        },
+        france: {
+            name: '🇫🇷 Francia - Centro de Investigación',
+            description: 'Visita centros de investigación en Francia',
+            skyboxImage: '../../assets/mirai_lab.jpg' // Same for now, can be changed later
+        }
+    };
+    
+    // Update tour info
+    const currentTour = tourConfigs[selectedTour];
+    tourInfoEl.textContent = `${currentTour.name} - ${currentTour.description}`;
 
     // Función simple de debug
     function debug(message) {
@@ -135,7 +162,7 @@
         const skyboxGeometry = new THREE.SphereGeometry(100, 32, 32);
         const textureLoader = new THREE.TextureLoader();
         
-        textureLoader.load('../../assets/mirai_lab.jpg', 
+        textureLoader.load(currentTour.skyboxImage, 
           (texture) => {
             // Skybox exitoso
             const skyboxMaterial = new THREE.MeshBasicMaterial({ 
