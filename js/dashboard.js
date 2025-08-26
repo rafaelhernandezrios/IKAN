@@ -1,11 +1,17 @@
 /**
- * Dashboard Functionality
+ * Modern Dashboard Functionality
  * Handles dashboard interactions and WebXR session management
  */
 
 document.addEventListener('DOMContentLoaded', function() {
     // Protect route - redirect to login if not authenticated
     auth.protectRoute();
+
+    // Reset badges on first load to ensure new structure
+    if (!localStorage.getItem('gca_virtual_badges_reset')) {
+        badgeSystem.resetBadges();
+        localStorage.setItem('gca_virtual_badges_reset', 'true');
+    }
 
     // Initialize dashboard
     initializeDashboard();
@@ -18,6 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load badges
     loadBadges();
+    
+    // Update badges display
+    updateBadgesDisplay();
+    
+    // Initialize animations
+    initializeAnimations();
 });
 
 /**
@@ -27,28 +39,78 @@ function initializeDashboard() {
     // Add fade-in animation to main content
     const mainContent = document.querySelector('.main-content');
     if (mainContent) {
-        mainContent.classList.add('fade-in');
+        mainContent.style.opacity = '0';
+        mainContent.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            mainContent.style.transition = 'all 0.6s ease';
+            mainContent.style.opacity = '1';
+            mainContent.style.transform = 'translateY(0)';
+        }, 100);
     }
+}
+
+/**
+ * Initialize animations
+ */
+function initializeAnimations() {
+    // Animate metric cards on load
+    const metricCards = document.querySelectorAll('.metric-card');
+    metricCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, 200 + (index * 100));
+    });
+    
+    // Animate activity items
+    const activityItems = document.querySelectorAll('.activity-item');
+    activityItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+            item.style.transition = 'all 0.4s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateX(0)';
+        }, 600 + (index * 100));
+    });
+    
+    // Animate badges
+    const badgeItems = document.querySelectorAll('.badge-item');
+    badgeItems.forEach((badge, index) => {
+        badge.style.opacity = '0';
+        badge.style.transform = 'scale(0.8)';
+        
+        setTimeout(() => {
+            badge.style.transition = 'all 0.4s ease';
+            badge.style.opacity = '1';
+            badge.style.transform = 'scale(1)';
+        }, 800 + (index * 150));
+    });
 }
 
 /**
  * Set up event listeners
  */
 function setupEventListeners() {
-    // Logout button
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            auth.logout();
+    // Enter VR button
+    const enterVRBtn = document.getElementById('enterVRBtn');
+    if (enterVRBtn) {
+        enterVRBtn.addEventListener('click', function() {
+            startVRSession();
         });
     }
 
-    // VR Session button
-    const vrSessionBtn = document.getElementById('enterVRSession');
-    if (vrSessionBtn) {
-        vrSessionBtn.addEventListener('click', function() {
-            startVRSession();
+    // Sidebar toggle
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            toggleSidebar();
         });
     }
 
@@ -56,13 +118,43 @@ function setupEventListeners() {
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            e.preventDefault();
-            // Remove active class from all links
-            navLinks.forEach(l => l.classList.remove('active'));
-            // Add active class to clicked link
-            this.classList.add('active');
+            // Only prevent default for internal dashboard links
+            if (this.getAttribute('href') === '#' || this.getAttribute('href') === '') {
+                e.preventDefault();
+                // Remove active class from all nav items
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                // Add active class to parent nav item
+                this.closest('.nav-item').classList.add('active');
+            }
+            // For external links (like badges.html), let them navigate normally
         });
     });
+
+    // Export CSV button
+    const exportBtn = document.querySelector('.btn-secondary');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            exportUserData();
+        });
+    }
+}
+
+/**
+ * Toggle sidebar visibility on mobile
+ */
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const toggleBtn = document.querySelector('.sidebar-toggle i');
+    
+    if (sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+        toggleBtn.className = 'fas fa-arrow-left';
+    } else {
+        sidebar.classList.add('open');
+        toggleBtn.className = 'fas fa-arrow-right';
+    }
 }
 
 /**
@@ -71,46 +163,102 @@ function setupEventListeners() {
 function loadUserData() {
     const user = auth.getCurrentUser();
     if (user) {
-        // Update points display
-        const pointsElement = document.getElementById('userPoints');
-        if (pointsElement) {
-            pointsElement.textContent = user.points;
+        // Update welcome message
+        const welcomeTitle = document.querySelector('.welcome-title');
+        if (welcomeTitle) {
+            welcomeTitle.textContent = `Welcome, ${user.name || 'User'}`;
         }
 
-        // Update session information (could be loaded from API in real app)
-        updateSessionInfo();
+        // Update metrics with real data (in a real app, this would come from API)
+        updateMetrics();
     }
 }
 
 /**
- * Update session information
+ * Update dashboard metrics
  */
-function updateSessionInfo() {
-    // In a real app, this would come from an API
-    const currentSession = {
-        title: 'Futuro del Trabajo',
-        location: 'TOKIO',
-        type: 'Video',
-        description: 'Explora las tendencias del futuro del trabajo en Tokio',
-        webxrUrl: 'https://example.com/webxr-session' // Replace with actual WebXR URL
+function updateMetrics() {
+    // In a real app, these would come from an API
+    const metrics = {
+        sessions: 12,
+        timeInVR: '6h45m',
+        interactions: 134
     };
 
-    // Update session card if elements exist
-    const sessionTitle = document.querySelector('.session-title');
-    const sessionLocation = document.querySelector('.session-location');
-    
-    if (sessionTitle) sessionTitle.textContent = currentSession.title;
-    if (sessionLocation) sessionLocation.textContent = currentSession.location;
+    // Update metric values
+    const metricValues = document.querySelectorAll('.metric-value');
+    if (metricValues.length >= 3) {
+        metricValues[0].textContent = metrics.sessions;
+        metricValues[1].textContent = metrics.timeInVR;
+        metricValues[2].textContent = metrics.interactions;
+    }
 }
 
 /**
- * Load and display badges
+ * Load badges
  */
 function loadBadges() {
-    const badgesContainer = document.getElementById('badgesContainer');
-    if (badgesContainer) {
-        badgeSystem.renderBadges(badgesContainer, false); // Only show unlocked badges
+    // Badges are now loaded by the badgeSystem
+    // This function is kept for compatibility
+}
+
+/**
+ * Update badges display
+ */
+function updateBadgesDisplay() {
+    const badgesGrid = document.getElementById('dashboardBadges');
+    if (badgesGrid) {
+        // Clear existing badges
+        badgesGrid.innerHTML = '';
+        
+        // Get unlocked badges for dashboard display
+        const unlockedBadges = badgeSystem.getUnlockedBadges().slice(0, 4); // Show up to 4 badges
+        
+        unlockedBadges.forEach(badge => {
+            const badgeElement = createDashboardBadgeElement(badge);
+            badgesGrid.appendChild(badgeElement);
+        });
+        
+        // Add empty placeholder if less than 4 badges
+        while (badgesGrid.children.length < 4) {
+            const emptyBadge = document.createElement('div');
+            emptyBadge.className = 'badge-item empty';
+            emptyBadge.innerHTML = `
+                <div class="badge-icon empty">
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+                <div class="badge-name">Más badges</div>
+            `;
+            badgesGrid.appendChild(emptyBadge);
+        }
     }
+}
+
+/**
+ * Create dashboard badge element
+ */
+function createDashboardBadgeElement(badge) {
+    const badgeItem = document.createElement('div');
+    badgeItem.className = 'badge-item';
+    
+    const categoryColor = badgeSystem.categories[badge.category].color;
+    
+    badgeItem.innerHTML = `
+        <div class="badge-icon" style="background: linear-gradient(135deg, ${categoryColor} 0%, ${categoryColor}dd 100%);">
+            <i class="${badge.icon}"></i>
+        </div>
+        <div class="badge-name">${badge.name}</div>
+    `;
+    
+    // Add tooltip with description
+    badgeItem.title = `${badge.name}: ${badge.description}`;
+    
+    // Add click event for details
+    badgeItem.addEventListener('click', () => {
+        badgeSystem.showBadgeDetails(badge);
+    });
+    
+    return badgeItem;
 }
 
 /**
@@ -118,303 +266,131 @@ function loadBadges() {
  */
 function startVRSession() {
     // Show loading state
-    const vrBtn = document.getElementById('enterVRSession');
-    const originalText = vrBtn.textContent;
-    vrBtn.textContent = 'Cargando...';
-    vrBtn.disabled = true;
-
-            // Check WebXR support and redirect to VR experience
+    const enterVRBtn = document.getElementById('enterVRBtn');
+    if (enterVRBtn) {
+        const originalText = enterVRBtn.innerHTML;
+        enterVRBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        enterVRBtn.disabled = true;
+        
+        // Simulate loading
         setTimeout(() => {
-            if (navigator.xr) {
-                // Redirect to VR experience with simple hand detection for Quest 3
-                window.location.href = 'quest3-vr-simple-hands.html';
-            } else {
-                // Fallback for browsers without WebXR support
-                showWebXRNotSupported();
-            }
-
-        // Restore button
-        vrBtn.textContent = originalText;
-        vrBtn.disabled = false;
-    }, 1500);
+                    // Redirect to VR experience
+        window.location.href = 'vr/quest3-vr-simple-hands.html';
+        }, 1500);
+    }
 }
 
 /**
- * Open WebXR experience
+ * Export user data as CSV
  */
-function openWebXRExperience() {
-    // Create modal for WebXR experience
-    const modal = document.createElement('div');
-    modal.className = 'webxr-modal';
-    modal.innerHTML = `
-        <div class="webxr-content">
-            <div class="webxr-header">
-                <h3>Experiencia WebXR - Futuro del Trabajo</h3>
-                <button class="webxr-close">&times;</button>
-            </div>
-            <div class="webxr-body">
-                <div class="webxr-placeholder">
-                    <div class="vr-icon-large">🥽</div>
-                    <h4>Experiencia VR Inmersiva</h4>
-                    <p>Explora el futuro del trabajo en Tokio a través de realidad virtual</p>
-                    <div class="webxr-features">
-                        <div class="feature">
-                            <span class="feature-icon">🌍</span>
-                            <span>360° Inmersivo</span>
-                        </div>
-                        <div class="feature">
-                            <span class="feature-icon">🎯</span>
-                            <span>Interactivo</span>
-                        </div>
-                        <div class="feature">
-                            <span class="feature-icon">📚</span>
-                            <span>Educativo</span>
-                        </div>
-                    </div>
-                    <button class="webxr-launch-btn">Lanzar Experiencia</button>
+function exportUserData() {
+    const user = auth.getCurrentUser();
+    if (!user) return;
+
+    // Create CSV content
+    const csvContent = [
+        ['User Data Export'],
+        ['Name', user.name || 'User'],
+        ['Email', user.email],
+        ['Sessions', '12'],
+        ['Time in VR', '6h45m'],
+        ['Interactions', '134'],
+        ['Export Date', new Date().toLocaleDateString()]
+    ].map(row => row.join(',')).join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gca-virtual-data-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    // Show success message
+    showNotification('Data exported successfully!', 'success');
+}
+
+/**
+ * Show notification
+ */
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        z-index: 10000;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+/**
+ * Update activity feed
+ */
+function updateActivityFeed() {
+    // In a real app, this would fetch recent activity from an API
+    const activities = [
+        { text: "Completed 'Introduction to AI'", time: "1h ago", color: "purple" },
+        { text: "Visited Pepper Robot", time: "3h ago", color: "teal" },
+        { text: "Session finished", time: "Yesterday", color: "grey" },
+        { text: "Session started", time: "Yesterday", color: "grey" },
+        { text: "Completed 'Basics of Robotics'", time: "2d ago", color: "blue" }
+    ];
+
+    const activityList = document.querySelector('.activity-list');
+    if (activityList) {
+        activityList.innerHTML = '';
+        
+        activities.forEach(activity => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.innerHTML = `
+                <div class="activity-dot ${activity.color}"></div>
+                <div class="activity-content">
+                    <div class="activity-text">${activity.text}</div>
+                    <div class="activity-time">${activity.time}</div>
                 </div>
-            </div>
-        </div>
-    `;
-
-    // Add styles
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        animation: fadeIn 0.3s ease-out;
-    `;
-
-    const content = modal.querySelector('.webxr-content');
-    content.style.cssText = `
-        background: white;
-        border-radius: 16px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        overflow: hidden;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    `;
-
-    document.body.appendChild(modal);
-
-    // Close handlers
-    const closeBtn = modal.querySelector('.webxr-close');
-    closeBtn.addEventListener('click', () => modal.remove());
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-    });
-
-    // Launch button handler
-    const launchBtn = modal.querySelector('.webxr-launch-btn');
-    launchBtn.addEventListener('click', () => {
-        // Simulate launching WebXR experience
-        simulateWebXRExperience();
-        modal.remove();
-    });
+            `;
+            activityList.appendChild(activityItem);
+        });
+    }
 }
 
-/**
- * Show WebXR not supported message
- */
-function showWebXRNotSupported() {
-    const modal = document.createElement('div');
-    modal.className = 'webxr-error-modal';
-    modal.innerHTML = `
-        <div class="webxr-error-content">
-            <div class="error-icon">⚠️</div>
-            <h3>WebXR no soportado</h3>
-            <p>Tu navegador no soporta experiencias de realidad virtual.</p>
-            <p>Para una experiencia completa, usa un navegador compatible con WebXR o un dispositivo VR.</p>
-            <button class="error-close-btn">Entendido</button>
-        </div>
-    `;
+// Update activity feed on load
+document.addEventListener('DOMContentLoaded', function() {
+    updateActivityFeed();
+});
 
-    // Add styles
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-    `;
-
-    const content = modal.querySelector('.webxr-error-content');
-    content.style.cssText = `
-        background: white;
-        border-radius: 12px;
-        padding: 32px;
-        text-align: center;
-        max-width: 400px;
-        width: 90%;
-    `;
-
-    document.body.appendChild(modal);
-
-    // Close handler
-    const closeBtn = modal.querySelector('.error-close-btn');
-    closeBtn.addEventListener('click', () => modal.remove());
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.remove();
-    });
-}
-
-/**
- * Simulate WebXR experience
- */
-function simulateWebXRExperience() {
-    // Create fullscreen VR experience simulation
-    const vrExperience = document.createElement('div');
-    vrExperience.className = 'vr-experience';
-    vrExperience.innerHTML = `
-        <div class="vr-hud">
-            <div class="vr-info">
-                <span class="vr-location">Tokio, Japón</span>
-                <span class="vr-progress">Progreso: 0%</span>
-            </div>
-            <div class="vr-controls">
-                <button class="vr-exit">Salir</button>
-            </div>
-        </div>
-        <div class="vr-scene">
-            <div class="vr-environment">
-                <div class="vr-building">🏢</div>
-                <div class="vr-people">👥</div>
-                <div class="vr-technology">💻</div>
-            </div>
-            <div class="vr-overlay">
-                <h2>Futuro del Trabajo</h2>
-                <p>Explora las oficinas del futuro en Tokio</p>
-                <div class="vr-quiz">
-                    <h3>Pregunta 1:</h3>
-                    <p>¿Qué tecnología será más importante en el trabajo del futuro?</p>
-                    <div class="vr-options">
-                        <button class="vr-option">Inteligencia Artificial</button>
-                        <button class="vr-option">Realidad Virtual</button>
-                        <button class="vr-option">Automatización</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Add VR experience styles
-    vrExperience.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        z-index: 2000;
-        overflow: hidden;
-    `;
-
-    document.body.appendChild(vrExperience);
-
-    // Add VR-specific styles
-    const vrStyles = document.createElement('style');
-    vrStyles.textContent = `
-        .vr-hud {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            color: white;
-            z-index: 10;
-        }
-        
-        .vr-scene {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .vr-environment {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 200px;
-            opacity: 0.3;
-        }
-        
-        .vr-overlay {
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 40px;
-            border-radius: 16px;
-            text-align: center;
-            max-width: 500px;
-        }
-        
-        .vr-option {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 15px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .vr-option:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .vr-exit {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid white;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-    `;
-    document.head.appendChild(vrStyles);
-
-    // Exit VR experience
-    const exitBtn = vrExperience.querySelector('.vr-exit');
-    exitBtn.addEventListener('click', () => {
-        vrExperience.remove();
-        vrStyles.remove();
-    });
-
-    // Simulate progress
-    let progress = 0;
-    const progressElement = vrExperience.querySelector('.vr-progress');
-    const progressInterval = setInterval(() => {
-        progress += 10;
-        if (progressElement) {
-            progressElement.textContent = `Progreso: ${progress}%`;
-        }
-        if (progress >= 100) {
-            clearInterval(progressInterval);
-            // Unlock a badge for completing the experience
-            badgeSystem.unlockBadge('innovator');
-        }
-    }, 2000);
-} 
+// Global function to reset badges (for testing)
+window.resetBadges = function() {
+    badgeSystem.resetBadges();
+    updateBadgesDisplay();
+    console.log('Badges reset to default state');
+    console.log('Unlocked badges:', badgeSystem.getUnlockedBadges().map(b => b.name));
+}; 

@@ -95,7 +95,7 @@ class Auth {
      */
     redirectIfAuthenticated() {
         if (this.isAuthenticated) {
-            window.location.href = 'dashboard.html';
+            window.location.href = 'pages/dashboard.html';
         }
     }
 }

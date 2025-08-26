@@ -135,7 +135,7 @@
         const skyboxGeometry = new THREE.SphereGeometry(100, 32, 32);
         const textureLoader = new THREE.TextureLoader();
         
-        textureLoader.load('assets/mirai_lab.jpg', 
+        textureLoader.load('../../assets/mirai_lab.jpg', 
           (texture) => {
             // Skybox exitoso
             const skyboxMaterial = new THREE.MeshBasicMaterial({ 
@@ -285,7 +285,7 @@
           
           // Crear video texture
           const video = document.createElement('video');
-          video.src = 'assets/go2.mp4';
+          video.src = '../../assets/go2.mp4';
           video.loop = false;
           video.muted = false; // Habilitar audio
           video.volume = 0.7; // Volumen al 70%

@@ -15,8 +15,11 @@ Una plataforma educativa web con experiencia VR inmersiva para Oculus Quest 3.
 ```
 IKAN_VR/
 ├── 📄 index.html                    # Página de login
-├── 📄 dashboard.html                # Dashboard principal
-├── 📄 quest3-vr-simple-hands.html  # Experiencia VR (funcionando)
+├── 📁 pages/                        # Páginas de la aplicación
+│   ├── 📄 dashboard.html            # Dashboard principal
+│   ├── 📄 badges.html               # Página de badges
+│   └── 📁 vr/                       # Experiencias VR
+│       └── 📄 quest3-vr-simple-hands.html  # Experiencia VR (funcionando)
 ├── 📁 css/                          # Estilos
 ├── 📁 js/                           # JavaScript
 ├── 📁 assets/                       # Recursos multimedia

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCA Virtual - Dashboard</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-globe"></i>
+                <span>GCA Virtual</span>
+            </div>
+        </div>
+        
+        <ul class="sidebar-nav">
+            <li class="nav-item active">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Statistics</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="badges.html" class="nav-link">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Badges</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <button class="sidebar-toggle">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Section -->
+        <div class="top-section">
+            <div class="welcome-section">
+                <h1 class="welcome-title">Welcome, User</h1>
+            </div>
+                         <div class="hero-section">
+                 <div class="hero-card">
+                     <div class="hero-image">
+                                                   <img src="../assets/dashboard.png" alt="GCA Virtual Dashboard" class="dashboard-image">
+                         <div class="hero-overlay">
+                             <div class="vr-person">
+                                 <i class="fas fa-vr-cardboard"></i>
+                             </div>
+                             <div class="world-map">
+                                 <div class="map-pin" style="top: 20%; left: 30%;"></div>
+                                 <div class="map-pin" style="top: 40%; left: 60%;"></div>
+                                 <div class="map-pin" style="top: 60%; left: 45%;"></div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+        </div>
+
+        <!-- Metrics Section -->
+        <div class="metrics-section">
+            <div class="metric-card">
+                <div class="metric-header">Sessions</div>
+                <div class="metric-value">12</div>
+            </div>
+            
+            <div class="metric-card gradient-purple">
+                <div class="metric-header">Time in VR</div>
+                <div class="metric-value">6h45m</div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-header">Interactions</div>
+                <div class="metric-value">134</div>
+                <div class="metric-chart">
+                    <div class="chart-line"></div>
+                </div>
+            </div>
+            
+            <div class="quick-actions-card">
+                <div class="card-title">Quick Actions</div>
+                <button class="btn-primary" id="enterVRBtn">
+                    <i class="fas fa-vr-cardboard"></i>
+                    Enter VR
+                </button>
+                <button class="btn-secondary">
+                    <i class="fas fa-download"></i>
+                    Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <!-- Activity Feed -->
+            <div class="activity-card">
+                <div class="card-title">Activity</div>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-dot purple"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">Completed 'Introduction to AI'</div>
+                            <div class="activity-time">1h ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-dot teal"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">Visited Pepper Robot</div>
+                            <div class="activity-time">3h ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-dot grey"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">Session finished</div>
+                            <div class="activity-time">Yesterday</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-dot grey"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">Session started</div>
+                            <div class="activity-time">Yesterday</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-dot blue"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">Completed 'Basics of Robotics'</div>
+                            <div class="activity-time">2d ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                         <!-- Badges Section -->
+             <div class="badges-card">
+                 <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                     <span>Badges</span>
+                     <a href="badges.html" class="btn-link" style="color:#60a5fa;font-size:14px;text-decoration:none;">Ver todos</a>
+                 </div>
+                 <div class="badges-grid" id="dashboardBadges">
+                     <!-- Badges will be loaded dynamically -->
+                 </div>
+             </div>
+        </div>
+    </main>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/badges.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+</html> 

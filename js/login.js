@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Redirect to dashboard after short delay
             setTimeout(() => {
-                window.location.href = 'dashboard.html';
+                window.location.href = 'pages/dashboard.html';
             }, 1000);
         } else {
             showError('Credenciales inválidas. Intenta con un email válido.');
