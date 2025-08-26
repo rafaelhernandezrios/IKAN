@@ -17,9 +17,17 @@ IKAN_VR/
 ├── 📄 index.html                    # Página de login
 ├── 📄 dashboard.html                # Dashboard principal
 ├── 📄 quest3-vr-simple-hands.html  # Experiencia VR (funcionando)
-├── 📁 css/                          # Estilos
-├── 📁 js/                           # JavaScript
-├── 📁 assets/                       # Recursos multimedia
+├── 📁 css/
+│   ├── style.css                    # Estilos globales
+│   ├── login.css                    # Estilos del login
+│   └── dashboard.css                # Estilos del dashboard
+├── 📁 js/
+│   ├── auth.js                      # Sistema de autenticación
+│   ├── login.js                     # Lógica del login
+│   ├── badges.js                    # Sistema de badges
+│   └── dashboard.js                 # Lógica del dashboard
+├── 📁 assets/
+│   └── mirai_lab.jpg                # Imagen 360° del laboratorio
 ├── 📁 docs/                         # Documentación
 ├── 📁 scripts/                      # Scripts de configuración
 └── 📄 README.md                     # Este archivo

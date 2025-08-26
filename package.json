@@ -5,7 +5,12 @@
   "main": "index.html",
   "scripts": {
     "start": "npx serve . -p 8000",
+    "start-https": "npx serve . -p 8000 --ssl-cert ./cert.pem --ssl-key ./key.pem",
     "dev": "npx live-server --port=8000",
+    "dev-https": "npx live-server --port=8000 --https",
+    "cloudflare": "npx cloudflared tunnel --url http://localhost:8000",
+    "setup-windows": "powershell -ExecutionPolicy Bypass -File scripts/generate-ssl-cert.ps1",
+    "setup-linux": "chmod +x scripts/generate-ssl-cert.sh && ./scripts/generate-ssl-cert.sh",
     "build": "echo 'No build step required for static HTML/CSS/JS'",
     "test": "echo 'No tests configured yet'"
   },

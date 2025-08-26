@@ -1,0 +1,10 @@
+# Cloudflare Tunnel Configuration
+# English: Cloudflare Tunnel Configuration
+
+tunnel: gca-virtual-tunnel
+credentials-file: .cloudflare/credentials.json
+
+ingress:
+  - hostname: gca-virtual.your-domain.com
+    service: http://localhost:8000
+  - service: http_status:404
