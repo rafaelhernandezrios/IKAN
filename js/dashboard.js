@@ -303,12 +303,730 @@ function setupModalEventListeners() {
         });
     }
     
-    // Tour cards
-    const tourCards = document.querySelectorAll('.tour-card');
-    tourCards.forEach(card => {
+    // Country cards - show cities submenu
+    const countryCards = document.querySelectorAll('.tour-card[data-country]');
+    countryCards.forEach(card => {
         card.addEventListener('click', function() {
-            const tourType = this.dataset.tour;
-            startVRSession(tourType);
+            const country = this.dataset.country;
+            showCitiesSubmenu(country);
+        });
+    });
+
+    // Back button to return to countries
+    const backBtn = document.getElementById('backToCountries');
+    if (backBtn) {
+        backBtn.addEventListener('click', showCountriesMenu);
+    }
+
+    // Back button to return to cities
+    const backToCitiesBtn = document.getElementById('backToCities');
+    if (backToCitiesBtn) {
+        backToCitiesBtn.addEventListener('click', showCitiesMenu);
+    }
+}
+
+/**
+ * Show cities submenu for selected country
+ */
+function showCitiesSubmenu(country) {
+    const countriesGrid = document.getElementById('countriesGrid');
+    const citiesSubmenu = document.getElementById('citiesSubmenu');
+    const selectedCountryTitle = document.getElementById('selectedCountryTitle');
+    const citiesGrid = document.getElementById('citiesGrid');
+
+    if (countriesGrid && citiesSubmenu && selectedCountryTitle && citiesGrid) {
+        // Hide countries grid
+        countriesGrid.style.display = 'none';
+        
+        // Show cities submenu
+        citiesSubmenu.style.display = 'block';
+        
+        // Update title
+        const countryNames = {
+            'japan': 'Japón',
+            'mexico': 'México',
+            'france': 'Francia'
+        };
+        selectedCountryTitle.textContent = `Ciudades de ${countryNames[country]}`;
+        
+        // Load and display cities
+        loadCitiesForCountry(country, citiesGrid);
+        
+        // Setup city card event listeners
+        setupCityCardListeners();
+    }
+}
+
+/**
+ * Show countries menu (go back)
+ */
+function showCountriesMenu() {
+    const countriesGrid = document.getElementById('countriesGrid');
+    const citiesSubmenu = document.getElementById('citiesSubmenu');
+
+    if (countriesGrid && citiesSubmenu) {
+        // Show countries grid
+        countriesGrid.style.display = 'grid';
+        
+        // Hide cities submenu
+        citiesSubmenu.style.display = 'none';
+    }
+}
+
+/**
+ * Show cities menu (go back)
+ */
+function showCitiesMenu() {
+    const citiesSubmenu = document.getElementById('citiesSubmenu');
+    const cityMapSubmenu = document.getElementById('cityMapSubmenu');
+
+    if (citiesSubmenu && cityMapSubmenu) {
+        // Show cities submenu
+        citiesSubmenu.style.display = 'block';
+        
+        // Hide city map submenu
+        cityMapSubmenu.style.display = 'none';
+    }
+}
+
+/**
+ * Show city map submenu for selected city
+ */
+function showCityMapSubmenu(cityName, cityTitle) {
+    const citiesSubmenu = document.getElementById('citiesSubmenu');
+    const cityMapSubmenu = document.getElementById('cityMapSubmenu');
+    const selectedCityTitle = document.getElementById('selectedCityTitle');
+    const cityMapContainer = document.getElementById('cityMapContainer');
+
+    if (citiesSubmenu && cityMapSubmenu && selectedCityTitle && cityMapContainer) {
+        // Hide cities submenu
+        citiesSubmenu.style.display = 'none';
+        
+        // Show city map submenu
+        cityMapSubmenu.style.display = 'block';
+        
+        // Update title
+        selectedCityTitle.textContent = `Mapa de ${cityTitle}`;
+        
+        // Load and display city map
+        loadCityMap(cityName, cityTitle, cityMapContainer);
+        
+        // Setup VR button event listeners
+        setupVRButtonListeners();
+    }
+}
+
+/**
+ * Load city map with interactive VR buttons
+ */
+function loadCityMap(cityName, cityTitle, container) {
+    const cityMapData = getCityMapData(cityName, cityTitle);
+    
+    // Clear existing content
+    container.innerHTML = '';
+    
+    // Create map container
+    const mapContainer = document.createElement('div');
+    mapContainer.className = 'city-map-container';
+    
+    // Add map image or placeholder
+    if (cityMapData.mapImage) {
+        const mapImage = document.createElement('img');
+        mapImage.src = cityMapData.mapImage;
+        mapImage.alt = `Mapa de ${cityTitle}`;
+        mapImage.className = 'city-map';
+        mapImage.onerror = () => {
+            mapContainer.innerHTML = createMapPlaceholder(cityTitle, cityMapData.description);
+            addVRButtonsToMap(mapContainer, cityMapData.vrLocations);
+        };
+        mapContainer.appendChild(mapImage);
+    } else {
+        mapContainer.innerHTML = createMapPlaceholder(cityTitle, cityMapData.description);
+    }
+    
+    // Add VR buttons
+    addVRButtonsToMap(mapContainer, cityMapData.vrLocations);
+    
+    // Add city info panel
+    const infoPanel = createCityInfoPanel(cityMapData);
+    mapContainer.appendChild(infoPanel);
+    
+    container.appendChild(mapContainer);
+}
+
+/**
+ * Create map placeholder
+ */
+function createMapPlaceholder(cityTitle, description) {
+    return `
+        <div class="map-placeholder">
+            <i class="fas fa-map-marked-alt"></i>
+            <h4>${cityTitle}</h4>
+            <p>${description}</p>
+        </div>
+    `;
+}
+
+/**
+ * Add VR buttons to map
+ */
+function addVRButtonsToMap(mapContainer, vrLocations) {
+    vrLocations.forEach(location => {
+        const vrButton = document.createElement('button');
+        vrButton.className = 'vr-button';
+        vrButton.style.left = location.x + '%';
+        vrButton.style.top = location.y + '%';
+        vrButton.dataset.location = location.id;
+        vrButton.dataset.city = location.city;
+        
+        vrButton.innerHTML = `
+            <i class="${location.icon}"></i>
+            <div class="button-tooltip">${location.name}</div>
+        `;
+        
+        mapContainer.appendChild(vrButton);
+    });
+}
+
+/**
+ * Create city info panel
+ */
+function createCityInfoPanel(cityData) {
+    const infoPanel = document.createElement('div');
+    infoPanel.className = 'city-map-info';
+    
+    infoPanel.innerHTML = `
+        <h4>${cityData.name}</h4>
+        <p>${cityData.description}</p>
+        <div class="city-map-stats">
+            <span><i class="fas fa-map-marker-alt"></i> ${cityData.locations} ubicaciones</span>
+            <span><i class="fas fa-clock"></i> ${cityData.totalDuration}</span>
+        </div>
+    `;
+    
+    return infoPanel;
+}
+
+/**
+ * Setup VR button event listeners
+ */
+function setupVRButtonListeners() {
+    const vrButtons = document.querySelectorAll('.vr-button');
+    vrButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const locationId = this.dataset.location;
+            const cityName = this.dataset.city;
+            const locationName = this.querySelector('.button-tooltip').textContent;
+            
+            // Special case: osaka-research goes directly to VR
+            if (locationId === 'osaka-research') {
+                startVRSession(locationId, cityName, locationName);
+            } else if (locationId === 'osaka-innovation') {
+                // Special case: osaka-innovation (Tsutenkaku) is locked
+                showNotification(`🔒 ${locationName} está bloqueado`, 'warning');
+            } else {
+                // For other locations, show notification for now
+                showNotification(`Próximamente: Tour VR de ${locationName}`, 'info');
+                
+                // TODO: When videos are ready, uncomment this line and comment out the notification above:
+                // startVRSession(locationId, cityName, locationName);
+            }
+        });
+    });
+}
+
+/**
+ * Get city map data
+ */
+function getCityMapData(cityName, cityTitle) {
+    const cityMaps = {
+        'tokio-東京': {
+            name: 'Tokio 東京',
+            description: 'Capital tecnológica y centro de innovación de Japón',
+            mapImage: '../assets/tokyo-map.jpg',
+            locations: 4,
+            totalDuration: '45 min',
+            vrLocations: [
+                {
+                    id: 'tokyo-lab',
+                    name: 'Laboratorio Mirai',
+                    city: 'tokio',
+                    icon: 'fas fa-flask',
+                    x: 30,
+                    y: 40
+                },
+                {
+                    id: 'tokyo-tech',
+                    name: 'Centro Tecnológico',
+                    city: 'tokio',
+                    icon: 'fas fa-microchip',
+                    x: 70,
+                    y: 25
+                },
+                {
+                    id: 'tokyo-robot',
+                    name: 'Exhibición de Robots',
+                    city: 'tokio',
+                    icon: 'fas fa-robot',
+                    x: 50,
+                    y: 60
+                },
+                {
+                    id: 'tokyo-ai',
+                    name: 'Centro de IA',
+                    city: 'tokio',
+                    icon: 'fas fa-brain',
+                    x: 80,
+                    y: 70
+                }
+            ]
+        },
+        'osaka-大阪': {
+            name: 'Osaka 大阪',
+            description: 'Puntos de interes en Osaka',
+            mapImage: '../assets/osaka-map.jpg',
+            locations: 3,
+            totalDuration: '35 min',
+            vrLocations: [
+                {
+                    id: 'osaka-industry',
+                    name: 'Osaka Castle',
+                    city: 'osaka',
+                    icon: 'fas fa-landmark',
+                    x: 13,
+                    y: 15
+                },
+                {
+                    id: 'osaka-research',
+                    name: 'Mirai Innovation Research Institute',
+                    city: 'osaka',
+                    icon: 'fas fa-flask',
+                    x: 15,
+                    y: 65
+                },
+                {
+                    id: 'osaka-innovation',
+                    name: 'Torre de Tsutenkaku',
+                    city: 'osaka',
+                    icon: 'fas fa-building',
+                    x: 80,
+                    y: 15
+                }
+            ]
+        },
+        'kyoto-京都': {
+            name: 'Kyoto 京都',
+            description: 'Tradición y tecnología moderna en armonía',
+            mapImage: '../assets/kyoto-map.jpg',
+            locations: 3,
+            totalDuration: '30 min',
+            vrLocations: [
+                {
+                    id: 'kyoto-temple',
+                    name: 'Templo Tecnológico',
+                    city: 'kyoto',
+                    icon: 'fas fa-torii-gate',
+                    x: 35,
+                    y: 30
+                },
+                {
+                    id: 'kyoto-garden',
+                    name: 'Jardín Digital',
+                    city: 'kyoto',
+                    icon: 'fas fa-seedling',
+                    x: 60,
+                    y: 45
+                },
+                {
+                    id: 'kyoto-culture',
+                    name: 'Centro Cultural VR',
+                    city: 'kyoto',
+                    icon: 'fas fa-palette',
+                    x: 75,
+                    y: 60
+                }
+            ]
+        },
+        'ciudad-de-mexico': {
+            name: 'Ciudad de México',
+            description: 'Centro de innovación tecnológica de México',
+            mapImage: '../assets/mexico-city-map.jpg',
+            locations: 4,
+            totalDuration: '40 min',
+            vrLocations: [
+                {
+                    id: 'cdmx-innovation',
+                    name: 'Centro de Innovación',
+                    city: 'ciudad-de-mexico',
+                    icon: 'fas fa-rocket',
+                    x: 30,
+                    y: 35
+                },
+                {
+                    id: 'cdmx-startup',
+                    name: 'Hub de Startups',
+                    city: 'ciudad-de-mexico',
+                    icon: 'fas fa-chart-line',
+                    x: 65,
+                    y: 25
+                },
+                {
+                    id: 'cdmx-tech',
+                    name: 'Parque Tecnológico',
+                    city: 'ciudad-de-mexico',
+                    icon: 'fas fa-laptop-code',
+                    x: 45,
+                    y: 60
+                },
+                {
+                    id: 'cdmx-future',
+                    name: 'Museo del Futuro',
+                    city: 'ciudad-de-mexico',
+                    icon: 'fas fa-crystal-ball',
+                    x: 80,
+                    y: 70
+                }
+            ]
+        },
+        'monterrey': {
+            name: 'Monterrey',
+            description: 'Hub tecnológico del norte de México',
+            mapImage: '../assets/monterrey-map.jpg',
+            locations: 3,
+            totalDuration: '35 min',
+            vrLocations: [
+                {
+                    id: 'monterrey-tech',
+                    name: 'Centro Tecnológico',
+                    city: 'monterrey',
+                    icon: 'fas fa-microchip',
+                    x: 40,
+                    y: 40
+                },
+                {
+                    id: 'monterrey-industry',
+                    name: 'Parque Industrial 4.0',
+                    city: 'monterrey',
+                    icon: 'fas fa-cogs',
+                    x: 70,
+                    y: 30
+                },
+                {
+                    id: 'monterrey-innovation',
+                    name: 'Centro de Innovación',
+                    city: 'monterrey',
+                    icon: 'fas fa-lightbulb',
+                    x: 55,
+                    y: 65
+                }
+            ]
+        },
+        'guadalajara': {
+            name: 'Guadalajara',
+            description: 'Silicon Valley mexicano',
+            mapImage: '../assets/guadalajara-map.jpg',
+            locations: 3,
+            totalDuration: '38 min',
+            vrLocations: [
+                {
+                    id: 'guadalajara-silicon',
+                    name: 'Silicon Valley MX',
+                    city: 'guadalajara',
+                    icon: 'fas fa-building',
+                    x: 35,
+                    y: 35
+                },
+                {
+                    id: 'guadalajara-software',
+                    name: 'Centro de Software',
+                    city: 'guadalajara',
+                    icon: 'fas fa-code',
+                    x: 65,
+                    y: 45
+                },
+                {
+                    id: 'guadalajara-digital',
+                    name: 'Parque Digital',
+                    city: 'guadalajara',
+                    icon: 'fas fa-network-wired',
+                    x: 50,
+                    y: 65
+                }
+            ]
+        },
+        'paris': {
+            name: 'París',
+            description: 'Centro de investigación y desarrollo europeo',
+            mapImage: '../assets/paris-map.jpg',
+            locations: 4,
+            totalDuration: '50 min',
+            vrLocations: [
+                {
+                    id: 'paris-research',
+                    name: 'Centro de Investigación',
+                    city: 'paris',
+                    icon: 'fas fa-flask',
+                    x: 30,
+                    y: 30
+                },
+                {
+                    id: 'paris-innovation',
+                    name: 'Hub de Innovación',
+                    city: 'paris',
+                    icon: 'fas fa-lightbulb',
+                    x: 65,
+                    y: 25
+                },
+                {
+                    id: 'paris-tech',
+                    name: 'Parque Tecnológico',
+                    city: 'paris',
+                    icon: 'fas fa-microchip',
+                    x: 45,
+                    y: 60
+                },
+                {
+                    id: 'paris-future',
+                    name: 'Museo del Futuro',
+                    city: 'paris',
+                    icon: 'fas fa-crystal-ball',
+                    x: 75,
+                    y: 70
+                }
+            ]
+        },
+        'lyon': {
+            name: 'Lyon',
+            description: 'Polo tecnológico y científico francés',
+            mapImage: '../assets/lyon-map.jpg',
+            locations: 3,
+            totalDuration: '42 min',
+            vrLocations: [
+                {
+                    id: 'lyon-science',
+                    name: 'Centro Científico',
+                    city: 'lyon',
+                    icon: 'fas fa-atom',
+                    x: 40,
+                    y: 35
+                },
+                {
+                    id: 'lyon-tech',
+                    name: 'Parque Tecnológico',
+                    city: 'lyon',
+                    icon: 'fas fa-microchip',
+                    x: 65,
+                    y: 45
+                },
+                {
+                    id: 'lyon-research',
+                    name: 'Instituto de Investigación',
+                    city: 'lyon',
+                    icon: 'fas fa-microscope',
+                    x: 50,
+                    y: 65
+                }
+            ]
+        },
+        'toulouse': {
+            name: 'Toulouse',
+            description: 'Centro aeroespacial y tecnológico',
+            mapImage: '../assets/toulouse-map.jpg',
+            locations: 3,
+            totalDuration: '45 min',
+            vrLocations: [
+                {
+                    id: 'toulouse-aerospace',
+                    name: 'Centro Aeroespacial',
+                    city: 'toulouse',
+                    icon: 'fas fa-plane',
+                    x: 35,
+                    y: 30
+                },
+                {
+                    id: 'toulouse-satellite',
+                    name: 'Centro de Satélites',
+                    city: 'toulouse',
+                    icon: 'fas fa-satellite',
+                    x: 65,
+                    y: 40
+                },
+                {
+                    id: 'toulouse-space',
+                    name: 'Museo del Espacio',
+                    city: 'toulouse',
+                    icon: 'fas fa-rocket',
+                    x: 55,
+                    y: 65
+                }
+            ]
+        }
+    };
+    
+    return cityMaps[cityName] || {
+        name: cityTitle,
+        description: 'Explora esta ciudad en realidad virtual',
+        mapImage: null,
+        locations: 3,
+        totalDuration: '30 min',
+        vrLocations: [
+            {
+                id: 'default-location',
+                name: 'Ubicación Principal',
+                city: cityName,
+                icon: 'fas fa-map-marker-alt',
+                x: 50,
+                y: 50
+            }
+        ]
+    };
+}
+
+/**
+ * Load cities for a specific country
+ */
+function loadCitiesForCountry(country, citiesGrid) {
+    const citiesData = getCitiesData(country);
+    
+    // Clear existing cities
+    citiesGrid.innerHTML = '';
+    
+    // Add city cards
+    citiesData.forEach(city => {
+        const cityCard = createCityCard(city);
+        citiesGrid.appendChild(cityCard);
+    });
+}
+
+/**
+ * Get cities data for a country
+ */
+function getCitiesData(country) {
+    const citiesByCountry = {
+        'japan': [
+            {
+                name: 'Tokio 東京',
+                description: 'Capital tecnológica y centro de innovación',
+                image: '../assets/tokyo-preview.jpg',
+                duration: '20 min',
+                rating: '4.9',
+                badge: 'Capital'
+            },
+            {
+                name: 'Osaka 大阪',
+                description: 'Centro industrial y de investigación',
+                image: '../assets/osaka-preview.jpg',
+                duration: '18 min',
+                rating: '4.7',
+                badge: 'Industrial'
+            },
+            {
+                name: 'Kyoto　京都',
+                description: 'Tradición y tecnología moderna',
+                image: '../assets/kyoto-preview.jpg',
+                duration: '15 min',
+                rating: '4.8',
+                badge: 'Cultural'
+            }
+        ],
+        'mexico': [
+            {
+                name: 'Ciudad de México',
+                description: 'Centro de innovación tecnológica',
+                image: '../assets/mexico-city-preview.jpg',
+                duration: '16 min',
+                rating: '4.6',
+                badge: 'Capital'
+            },
+            {
+                name: 'Monterrey',
+                description: 'Hub tecnológico del norte',
+                image: '../assets/monterrey-preview.jpg',
+                duration: '14 min',
+                rating: '4.5',
+                badge: 'Tecnológico'
+            },
+            {
+                name: 'Guadalajara',
+                description: 'Silicon Valley mexicano',
+                image: '../assets/guadalajara-preview.jpg',
+                duration: '17 min',
+                rating: '4.7',
+                badge: 'Innovación'
+            }
+        ],
+        'france': [
+            {
+                name: 'París',
+                description: 'Centro de investigación y desarrollo',
+                image: '../assets/paris-preview.jpg',
+                duration: '22 min',
+                rating: '4.8',
+                badge: 'Capital'
+            },
+            {
+                name: 'Lyon',
+                description: 'Polo tecnológico y científico',
+                image: '../assets/lyon-preview.jpg',
+                duration: '19 min',
+                rating: '4.6',
+                badge: 'Científico'
+            },
+            {
+                name: 'Toulouse',
+                description: 'Centro aeroespacial y tecnológico',
+                image: '../assets/toulouse-preview.jpg',
+                duration: '21 min',
+                rating: '4.7',
+                badge: 'Aeroespacial'
+            }
+        ]
+    };
+    
+    return citiesByCountry[country] || [];
+}
+
+/**
+ * Create city card element
+ */
+function createCityCard(city) {
+    const cityCard = document.createElement('div');
+    cityCard.className = 'city-card';
+    cityCard.dataset.city = city.name.toLowerCase().replace(/\s+/g, '-');
+    
+    cityCard.innerHTML = `
+        <div class="city-image">
+            <img src="${city.image}" alt="${city.name}" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=${city.name}'">
+            <div class="city-overlay">
+                <i class="fas fa-play"></i>
+            </div>
+            <div class="city-badge">${city.badge}</div>
+        </div>
+        <div class="city-info">
+            <h4>${city.name}</h4>
+            <p>${city.description}</p>
+            <div class="city-stats">
+                <span><i class="fas fa-clock"></i> ${city.duration}</span>
+                <span><i class="fas fa-star"></i> ${city.rating}</span>
+            </div>
+        </div>
+    `;
+    
+    return cityCard;
+}
+
+/**
+ * Setup city card event listeners
+ */
+function setupCityCardListeners() {
+    const cityCards = document.querySelectorAll('.city-card');
+    cityCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const cityName = this.dataset.city;
+            const cityTitle = this.querySelector('h4').textContent;
+            
+            // Show city map submenu
+            showCityMapSubmenu(cityName, cityTitle);
         });
     });
 }
@@ -324,9 +1042,9 @@ function closeVRToursModal() {
 }
 
 /**
- * Start VR session with specific tour
+ * Start VR session with specific city
  */
-function startVRSession(tourType = 'japan') {
+function startVRSession(locationId, cityName, locationName) {
     // Show loading state
     const openVRToursBtn = document.getElementById('openVRToursBtn');
     if (openVRToursBtn) {
@@ -338,12 +1056,13 @@ function startVRSession(tourType = 'japan') {
         closeVRToursModal();
         
         // Show notification
-        showNotification(`Iniciando tour de ${getTourName(tourType)}...`, 'info');
+        showNotification(`Iniciando tour VR de ${locationName}...`, 'info');
         
         // Simulate loading and redirect
         setTimeout(() => {
-            // Store selected tour in localStorage for VR experience
-            localStorage.setItem('gca_virtual_selected_tour', tourType);
+            // Store selected city in localStorage for VR experience
+            localStorage.setItem('gca_virtual_selected_city', cityName);
+            localStorage.setItem('gca_virtual_selected_location', locationId);
             
             // Redirect to VR experience
             window.location.href = 'vr/quest3-vr-simple-hands.html';
@@ -352,15 +1071,78 @@ function startVRSession(tourType = 'japan') {
 }
 
 /**
- * Get tour name by type
+ * Get city display name
  */
-function getTourName(tourType) {
-    const tourNames = {
-        'japan': 'Japón',
-        'mexico': 'México',
-        'france': 'Francia'
+function getCityDisplayName(cityName) {
+    // Convert kebab-case to proper name
+    const cityNames = {
+        'tokio': 'Tokio',
+        'osaka': 'Osaka',
+        'kyoto': 'Kyoto',
+        'ciudad-de-mexico': 'Ciudad de México',
+        'monterrey': 'Monterrey',
+        'guadalajara': 'Guadalajara',
+        'paris': 'París',
+        'lyon': 'Lyon',
+        'toulouse': 'Toulouse'
     };
-    return tourNames[tourType] || 'Japón';
+    return cityNames[cityName] || cityName;
+}
+
+/**
+ * Get location display name
+ */
+function getLocationDisplayName(locationId) {
+    const locationNames = {
+        // Tokyo locations
+        'tokyo-lab': 'Laboratorio Mirai',
+        'tokyo-tech': 'Centro Tecnológico',
+        'tokyo-robot': 'Exhibición de Robots',
+        'tokyo-ai': 'Centro de IA',
+        
+        // Osaka locations
+        'osaka-industry': 'Osaka Castle',
+        'osaka-research': 'Mirai Innovation Research Institute',
+        'osaka-innovation': 'Torre de Tsutenkaku',
+        
+        // Kyoto locations
+        'kyoto-temple': 'Templo Tecnológico',
+        'kyoto-garden': 'Jardín Digital',
+        'kyoto-culture': 'Centro Cultural VR',
+        
+        // Mexico City locations
+        'cdmx-innovation': 'Centro de Innovación',
+        'cdmx-startup': 'Hub de Startups',
+        'cdmx-tech': 'Parque Tecnológico',
+        'cdmx-future': 'Museo del Futuro',
+        
+        // Monterrey locations
+        'monterrey-tech': 'Centro Tecnológico',
+        'monterrey-industry': 'Parque Industrial 4.0',
+        'monterrey-innovation': 'Centro de Innovación',
+        
+        // Guadalajara locations
+        'guadalajara-silicon': 'Silicon Valley MX',
+        'guadalajara-software': 'Centro de Software',
+        'guadalajara-digital': 'Parque Digital',
+        
+        // Paris locations
+        'paris-research': 'Centro de Investigación',
+        'paris-innovation': 'Hub de Innovación',
+        'paris-tech': 'Parque Tecnológico',
+        'paris-future': 'Museo del Futuro',
+        
+        // Lyon locations
+        'lyon-science': 'Centro Científico',
+        'lyon-tech': 'Parque Tecnológico',
+        'lyon-research': 'Instituto de Investigación',
+        
+        // Toulouse locations
+        'toulouse-aerospace': 'Centro Aeroespacial',
+        'toulouse-satellite': 'Centro de Satélites',
+        'toulouse-space': 'Museo del Espacio'
+    };
+    return locationNames[locationId] || 'Ubicación VR';
 }
 
 /**
@@ -407,7 +1189,7 @@ function showNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? '#10b981' : '#3b82f6'};
+        background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
         color: white;
         padding: 12px 20px;
         border-radius: 8px;

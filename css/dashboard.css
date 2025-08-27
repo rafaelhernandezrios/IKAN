@@ -702,4 +702,787 @@ body {
     .modal-header h2 {
         font-size: 20px;
     }
+}
+
+/* ===== CITIES SUBMENU ===== */
+.cities-submenu {
+    animation: slideInFromRight 0.3s ease;
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.submenu-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #334155;
+}
+
+.back-button {
+    background: #334155;
+    border: none;
+    color: #94a3b8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    background: #475569;
+    color: #ffffff;
+}
+
+#selectedCountryTitle {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.cities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.city-card {
+    background: #0f172a;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.city-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: #3b82f6;
+}
+
+.city-image {
+    position: relative;
+    height: 140px;
+    overflow: hidden;
+}
+
+.city-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.city-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.city-card:hover .city-overlay {
+    opacity: 1;
+}
+
+.city-overlay i {
+    color: #ffffff;
+    font-size: 24px;
+    background: rgba(59, 130, 246, 0.8);
+    padding: 12px;
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+}
+
+.city-info {
+    padding: 16px;
+}
+
+.city-info h4 {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.city-info p {
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.city-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: #64748b;
+}
+
+.city-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.city-stats i {
+    color: #3b82f6;
+}
+
+.city-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(59, 130, 246, 0.9);
+    color: #ffffff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+/* Responsive cities submenu */
+@media (max-width: 768px) {
+    .cities-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .submenu-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .back-button {
+        align-self: flex-start;
+    }
+}
+
+/* ===== CITY MAP SUBMENU ===== */
+.city-map-submenu {
+    animation: slideInFromRight 0.3s ease;
+}
+
+.city-map-container {
+    position: relative;
+    background: #0f172a;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.city-map {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+}
+
+.map-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-placeholder {
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: #94a3b8;
+    font-size: 18px;
+    text-align: center;
+}
+
+.map-placeholder i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #3b82f6;
+}
+
+.map-placeholder h4 {
+    color: #ffffff;
+    margin-bottom: 8px;
+    font-size: 24px;
+}
+
+.map-placeholder p {
+    color: #94a3b8;
+    font-size: 14px;
+    max-width: 300px;
+    line-height: 1.5;
+}
+
+/* Interactive VR buttons on map */
+.vr-button {
+    position: absolute;
+    background: rgba(59, 130, 246, 0.9);
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.vr-button:hover {
+    background: rgba(59, 130, 246, 1);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.vr-button::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 2px solid rgba(59, 130, 246, 0.5);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.vr-button .button-tooltip {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.vr-button .button-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.8);
+}
+
+.vr-button:hover .button-tooltip {
+    opacity: 1;
+}
+
+/* City map info panel */
+.city-map-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 16px;
+    max-width: 250px;
+    backdrop-filter: blur(8px);
+    z-index: 15;
+}
+
+.city-map-info h4 {
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.city-map-info p {
+    color: #94a3b8;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.city-map-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: #64748b;
+}
+
+.city-map-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.city-map-stats i {
+    color: #3b82f6;
+}
+
+/* Responsive city map submenu */
+@media (max-width: 768px) {
+    .city-map-container {
+        min-height: 300px;
+    }
+    
+    .map-placeholder {
+        height: 300px;
+        font-size: 16px;
+    }
+    
+    .map-placeholder i {
+        font-size: 36px;
+    }
+    
+    .map-placeholder h4 {
+        font-size: 20px;
+    }
+    
+    .vr-button {
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+    
+    .city-map-info {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-top: 16px;
+        max-width: none;
+    }
+} 
+
+/* ===== VR HERO SECTION ===== */
+.vr-hero-section {
+    margin: 24px 0;
+}
+
+.vr-hero-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 40px;
+    position: relative;
+    overflow: hidden;
+    min-height: 280px;
+}
+
+.vr-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+    pointer-events: none;
+}
+
+.vr-hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+}
+
+.vr-hero-text h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 20px 0;
+    background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+}
+
+.vr-hero-text p {
+    font-size: 18px;
+    color: #cbd5e1;
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+    max-width: 500px;
+}
+
+.vr-features {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+}
+
+.vr-feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 20px;
+    color: #60a5fa;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.vr-hero-action {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+}
+
+.vr-hero-btn {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border: none;
+    color: white;
+    padding: 18px 36px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+    min-width: 200px;
+    justify-content: center;
+}
+
+.vr-hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
+}
+
+.vr-hero-btn i {
+    font-size: 20px;
+}
+
+.vr-stats {
+    display: flex;
+    gap: 32px;
+}
+
+.vr-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vr-hero-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.world-map-3d {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.globe-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.globe {
+    width: 180px;
+    height: 180px;
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 
+        inset -10px -10px 30px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(59, 130, 246, 0.3),
+        0 0 40px rgba(59, 130, 246, 0.1);
+    animation: rotate 30s linear infinite;
+}
+
+.globe-surface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.continent {
+    position: absolute;
+    background: rgba(34, 197, 94, 0.6);
+    border-radius: 50%;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.north-america {
+    width: 60px;
+    height: 40px;
+    top: 30%;
+    left: 20%;
+    transform: rotate(-15deg);
+}
+
+.south-america {
+    width: 35px;
+    height: 70px;
+    top: 45%;
+    left: 25%;
+    transform: rotate(-10deg);
+}
+
+.europe {
+    width: 45px;
+    height: 30px;
+    top: 35%;
+    left: 45%;
+    transform: rotate(5deg);
+}
+
+.africa {
+    width: 40px;
+    height: 65px;
+    top: 40%;
+    left: 48%;
+    transform: rotate(0deg);
+}
+
+.asia {
+    width: 80px;
+    height: 50px;
+    top: 25%;
+    left: 55%;
+    transform: rotate(-5deg);
+}
+
+.australia {
+    width: 35px;
+    height: 25px;
+    top: 65%;
+    left: 70%;
+    transform: rotate(10deg);
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.map-pin {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.map-pin.japan {
+    animation-delay: 0s;
+}
+
+.map-pin.mexico {
+    animation-delay: 1s;
+}
+
+.map-pin.france {
+    animation-delay: 2s;
+}
+
+.map-pin i {
+    font-size: 28px;
+    color: #ef4444;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.map-pin span {
+    font-size: 12px;
+    color: #f8fafc;
+    font-weight: 500;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Responsive VR Hero */
+@media (max-width: 1024px) {
+    .vr-hero-card {
+        grid-template-columns: 1fr 250px;
+        gap: 32px;
+        padding: 32px;
+    }
+    
+    .vr-hero-text h2 {
+        font-size: 32px;
+    }
+    
+    .world-map-3d {
+        width: 240px;
+        height: 240px;
+    }
+    
+    .globe-container {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .globe {
+        width: 160px;
+        height: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    .vr-hero-card {
+        grid-template-columns: 1fr;
+        padding: 24px;
+        gap: 24px;
+        min-height: auto;
+    }
+    
+    .vr-hero-text h2 {
+        font-size: 24px;
+    }
+    
+    .vr-hero-text p {
+        font-size: 16px;
+    }
+    
+    .vr-features {
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    
+    .vr-feature {
+        font-size: 12px;
+        padding: 8px 14px;
+    }
+    
+    .vr-hero-action {
+        flex-direction: column;
+        gap: 20px;
+        align-items: stretch;
+    }
+    
+    .vr-hero-btn {
+        padding: 16px 28px;
+        font-size: 16px;
+        min-width: auto;
+    }
+    
+    .vr-stats {
+        justify-content: center;
+        gap: 24px;
+    }
+    
+    .vr-hero-visual {
+        min-height: 180px;
+    }
+    
+    .world-map-3d {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .globe-container {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .globe {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .map-pin i {
+        font-size: 24px;
+    }
 } 

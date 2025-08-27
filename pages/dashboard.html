@@ -64,23 +64,67 @@
             <div class="welcome-section">
                 <h1 class="welcome-title">Welcome, User</h1>
             </div>
-                         <div class="hero-section">
-                 <div class="hero-card">
-                     <div class="hero-image">
-                                                   <img src="../assets/dashboard.png" alt="GCA Virtual Dashboard" class="dashboard-image">
-                         <div class="hero-overlay">
-                             <div class="vr-person">
-                                 <i class="fas fa-vr-cardboard"></i>
-                             </div>
-                             <div class="world-map">
-                                 <div class="map-pin" style="top: 20%; left: 30%;"></div>
-                                 <div class="map-pin" style="top: 40%; left: 60%;"></div>
-                                 <div class="map-pin" style="top: 60%; left: 45%;"></div>
-                             </div>
-                         </div>
-                     </div>
-                 </div>
-             </div>
+            
+            <!-- VR Hero Section -->
+            <div class="vr-hero-section">
+                <div class="vr-hero-card">
+                    <div class="vr-hero-content">
+                        <div class="vr-hero-text">
+                            <h2>🌍 Explora el Mundo en VR</h2>
+                            <p>Visita laboratorios de innovación, centros tecnológicos y lugares emblemáticos de Japón, México y Francia en realidad virtual inmersiva.</p>
+                            <div class="vr-features">
+                                <span class="vr-feature"><i class="fas fa-vr-cardboard"></i> Inmersión Total</span>
+                                <span class="vr-feature"><i class="fas fa-globe"></i> 9 Ciudades</span>
+                                <span class="vr-feature"><i class="fas fa-map-marker-alt"></i> 25+ Ubicaciones</span>
+                            </div>
+                        </div>
+                        <div class="vr-hero-action">
+                            <button class="vr-hero-btn" id="openVRToursBtn">
+                                <i class="fas fa-play"></i>
+                                <span>Iniciar Tour VR</span>
+                            </button>
+                            <div class="vr-stats">
+                                <div class="vr-stat">
+                                    <span class="stat-number">12</span>
+                                    <span class="stat-label">Sesiones</span>
+                                </div>
+                                <div class="vr-stat">
+                                    <span class="stat-number">6h45m</span>
+                                    <span class="stat-label">Tiempo VR</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vr-hero-visual">
+                        <div class="world-map-3d">
+                            <div class="globe-container">
+                                <div class="globe">
+                                    <div class="globe-surface">
+                                        <div class="continent north-america"></div>
+                                        <div class="continent south-america"></div>
+                                        <div class="continent europe"></div>
+                                        <div class="continent africa"></div>
+                                        <div class="continent asia"></div>
+                                        <div class="continent australia"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="map-pin japan" style="top: 25%; left: 85%;">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Japón</span>
+                            </div>
+                            <div class="map-pin mexico" style="top: 45%; left: 20%;">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>México</span>
+                            </div>
+                            <div class="map-pin france" style="top: 35%; left: 45%;">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Francia</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Metrics Section -->
@@ -105,13 +149,13 @@
             
             <div class="quick-actions-card">
                 <div class="card-title">Quick Actions</div>
-                <button class="btn-primary" id="openVRToursBtn">
-                    <i class="fas fa-globe"></i>
-                    Tours VR
-                </button>
                 <button class="btn-secondary">
                     <i class="fas fa-download"></i>
                     Export CSV
+                </button>
+                <button class="btn-secondary">
+                    <i class="fas fa-cog"></i>
+                    Settings
                 </button>
             </div>
         </div>
@@ -187,56 +231,84 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="tours-grid">
-                    <div class="tour-card" data-tour="japan">
+                <div class="tours-grid" id="countriesGrid">
+                    <div class="tour-card" data-country="japan">
                         <div class="tour-image">
                             <img src="../assets/japan-preview.jpg" alt="Japón" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=Japón'">
                             <div class="tour-overlay">
-                                <i class="fas fa-play"></i>
+                                <i class="fas fa-map-marker-alt"></i>
                             </div>
                         </div>
                         <div class="tour-info">
                             <h3>🇯🇵 Japón</h3>
                             <p>Explora el Laboratorio Mirai Innovation en Japón</p>
                             <div class="tour-stats">
-                                <span><i class="fas fa-clock"></i> 15 min</span>
+                                <span><i class="fas fa-city"></i> 3 ciudades</span>
                                 <span><i class="fas fa-star"></i> 4.8</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="tour-card" data-tour="mexico">
+                    <div class="tour-card" data-country="mexico">
                         <div class="tour-image">
                             <img src="../assets/mexico-preview.jpg" alt="México" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=México'">
                             <div class="tour-overlay">
-                                <i class="fas fa-play"></i>
+                                <i class="fas fa-map-marker-alt"></i>
                             </div>
                         </div>
                         <div class="tour-info">
                             <h3>🇲🇽 México</h3>
                             <p>Descubre la innovación tecnológica en México</p>
                             <div class="tour-stats">
-                                <span><i class="fas fa-clock"></i> 12 min</span>
+                                <span><i class="fas fa-city"></i> 3 ciudades</span>
                                 <span><i class="fas fa-star"></i> 4.6</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="tour-card" data-tour="france">
+                    <div class="tour-card" data-country="france">
                         <div class="tour-image">
                             <img src="../assets/france-preview.jpg" alt="Francia" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=Francia'">
                             <div class="tour-overlay">
-                                <i class="fas fa-play"></i>
+                                <i class="fas fa-map-marker-alt"></i>
                             </div>
                         </div>
                         <div class="tour-info">
                             <h3>🇫🇷 Francia</h3>
                             <p>Visita centros de investigación en Francia</p>
                             <div class="tour-stats">
-                                <span><i class="fas fa-clock"></i> 18 min</span>
+                                <span><i class="fas fa-city"></i> 3 ciudades</span>
                                 <span><i class="fas fa-star"></i> 4.7</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Cities Submenu (hidden by default) -->
+                <div class="cities-submenu" id="citiesSubmenu" style="display: none;">
+                    <div class="submenu-header">
+                        <button class="back-button" id="backToCountries">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver a países
+                        </button>
+                        <h3 id="selectedCountryTitle">Selecciona una ciudad</h3>
+                    </div>
+                    <div class="cities-grid" id="citiesGrid">
+                        <!-- Cities will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- City Map Submenu (hidden by default) -->
+                <div class="city-map-submenu" id="cityMapSubmenu" style="display: none;">
+                    <div class="submenu-header">
+                        <button class="back-button" id="backToCities">
+                            <i class="fas fa-arrow-left"></i>
+                            Volver a ciudades
+                        </button>
+                        <h3 id="selectedCityTitle">Mapa de la ciudad</h3>
+                    </div>
+                    <div class="city-map-container" id="cityMapContainer">
+                        <!-- City map and interactive buttons will be loaded dynamically -->
                     </div>
                 </div>
             </div>
