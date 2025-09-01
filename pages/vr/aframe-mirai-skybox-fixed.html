@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratorio Mirai - A-Frame con Skybox</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        a-scene {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .controls-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: none;
+        }
+
+        .video-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .close-video {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .skybox-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .interaction-status {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">Cargando Laboratorio Mirai...</div>
+
+    <div class="info-panel">
+        <h3>🥽 Laboratorio Mirai – A-Frame con Skybox</h3>
+        <p>Experiencia VR completa con fondo del Laboratorio Mirai</p>
+        <p style="margin-top: 10px; font-size: 12px;">
+            <a href="quest3-vr-simple-hands.html" style="color: #3b82f6; text-decoration: none;">
+                🔧 Versión Original Three.js
+            </a>
+        </p>
+    </div>
+
+         <div class="controls-info">
+         <h4>🎮 Controles:</h4>
+         <p><strong>Teclado:</strong> WASD para moverte</p>
+         <p><strong>Ratón:</strong> Click y arrastrar para mirar</p>
+         <p><strong>Interacción:</strong> Click en objetos</p>
+         <p><strong>Video 360°:</strong> Click en Unitree Go2</p>
+         <p><strong>Volver:</strong> ESC o click en botón rojo</p>
+     </div>
+
+    <div class="skybox-status" id="skyboxStatus">
+        Estado del skybox: Cargando...
+    </div>
+
+    <div class="interaction-status" id="interactionStatus">
+        Interacción: Haz click en los objetos
+    </div>
+
+    <div class="video-overlay" id="videoOverlay">
+        <button class="close-video" onclick="closeVideo()">✕ Cerrar</button>
+        <div class="video-container">
+            <video id="robotVideo" controls>
+                <source src="../../assets/go2.mp4" type="video/mp4">
+                Tu navegador no soporta video.
+            </video>
+        </div>
+    </div>
+
+    <a-scene 
+        vr-mode-ui="enabled: false"
+        embedded
+        loading-screen="enabled: false"
+        background="color: #87CEEB">
+
+        <!-- Assets -->
+        <a-assets>
+            <img id="labImage" src="../../assets/mirai_lab.jpg">
+            <video id="video360" src="../../assets/go2.mp4"
+                   crossorigin="anonymous" playsinline webkit-playsinline
+                   preload="auto"></video>
+        </a-assets>
+
+        <!-- Camera with basic controls -->
+        <a-entity id="camera" position="0 1.6 0" camera look-controls wasd-controls>
+            <a-cursor 
+                color="#FFFFFF" 
+                position="0 0 -1"
+                geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                material="color: #FFFFFF; shader: flat"
+                raycaster="objects: .interactive, .robot, .movable, .video-button">
+            </a-cursor>
+        </a-entity>
+
+        <!-- Lighting -->
+        <a-light type="ambient" color="#ffffff" intensity="1.0"></a-light>
+        <a-light type="directional" position="0 10 5" color="#ffffff" intensity="1.0"></a-light>
+
+        <!-- Skybox with Mirai Lab image -->
+        <a-sky id="skybox" src="#labImage" color="#87CEEB"></a-sky>
+
+                 <!-- Ground removed to show skybox background -->
+
+        <!-- Robot Pepper -->
+        <a-box 
+            class="interactive robot" 
+            position="1.8 0.8 -2.8" 
+            width="0.3" 
+            height="0.6" 
+            depth="0.3" 
+            color="#ffffff"
+            data-name="Pepper Robot"
+            data-info="Robot humanoide Pepper de SoftBank Robotics. Diseñado para interacción social y asistencia en entornos comerciales y educativos."
+            onclick="showObjectInfo(this)">
+        </a-box>
+
+        <!-- Unitree Go2 Robot -->
+        <a-box 
+            class="interactive robot" 
+            position="0.67 0.2 1.87" 
+            width="0.4" 
+            height="0.2" 
+            depth="0.3" 
+            color="#808080"
+            data-name="Unitree Go2"
+            data-info="Robot cuadrúpedo Unitree Go2. Robot perro de alta movilidad diseñado para investigación en locomoción, exploración y asistencia. Equipado con sensores avanzados y control de movimiento preciso."
+            onclick="showObjectInfo(this)">
+        </a-box>
+
+        <!-- Interactive Cube -->
+        <a-box 
+            class="interactive movable" 
+            position="0 1.6 -2" 
+            width="0.5" 
+            height="0.5" 
+            depth="0.5" 
+            color="#ffaa00"
+            data-name="Cubo Interactivo"
+            data-info="Cubo interactivo que puedes manipular. Representa la interactividad básica del sistema."
+            onclick="showObjectInfo(this)">
+        </a-box>
+
+        <!-- Information Panel -->
+        <a-entity id="infoPanel" position="0 2 -3" visible="false">
+            <a-plane 
+                width="2" 
+                height="1" 
+                color="#000000" 
+                material="transparent: true; opacity: 0.9">
+            </a-plane>
+            <a-text 
+                id="infoTitle" 
+                value="" 
+                color="#ffffff" 
+                width="1.8" 
+                align="center" 
+                position="0 0.3 0.01">
+            </a-text>
+            <a-text 
+                id="infoText" 
+                value="" 
+                color="#ffffff" 
+                width="1.6" 
+                align="center" 
+                position="0 -0.2 0.01">
+            </a-text>
+        </a-entity>
+
+                 <!-- Video Button for Unitree Go2 -->
+         <a-box 
+             id="videoButton"
+             class="interactive video-button" 
+             position="0.67 0.2 1.5" 
+             width="0.3" 
+             height="0.1" 
+             depth="0.1" 
+             color="#00ff00"
+             visible="false"
+             onclick="playVideo360()">
+         </a-box>
+         
+                   <!-- Videosphere 360 (hidden by default) -->
+          <a-videosphere id="videoSphere" src="#video360" visible="false" rotation="0 180 0"></a-videosphere>
+         
+         <!-- Back to Lab Button (hidden by default) -->
+         <a-box 
+             id="backToLabButton"
+             class="interactive" 
+             position="0 1.6 -2" 
+             width="0.5" 
+             height="0.1" 
+             depth="0.1" 
+             color="#ff0000"
+             visible="false"
+             onclick="backToLab()">
+         </a-box>
+
+    </a-scene>
+
+    <script>
+        // Global variables
+        let currentObject = null;
+        let videoButton = null;
+
+        // Hide loading when scene is ready
+        const sceneEl = document.querySelector('a-scene');
+        
+        sceneEl.addEventListener('loaded', function() {
+            console.log('A-Frame scene loaded successfully!');
+            document.getElementById('loading').style.display = 'none';
+            videoButton = document.getElementById('videoButton');
+            
+            // Check skybox loading status
+            checkSkyboxStatus();
+            
+            // Add cursor events for better interaction feedback
+            const cursor = document.querySelector('a-cursor');
+            if (cursor) {
+                cursor.addEventListener('mouseenter', function(event) {
+                    const intersectedObject = event.detail.intersectedEl;
+                    if (intersectedObject) {
+                        const name = intersectedObject.getAttribute('data-name');
+                        if (name) {
+                            document.getElementById('interactionStatus').textContent = `Interacción: Click en ${name}`;
+                        }
+                    }
+                });
+                
+                cursor.addEventListener('mouseleave', function() {
+                    document.getElementById('interactionStatus').textContent = 'Interacción: Haz click en los objetos';
+                });
+            }
+        });
+
+        // Function to check skybox loading status
+        function checkSkyboxStatus() {
+            const skybox = document.getElementById('skybox');
+            const statusEl = document.getElementById('skyboxStatus');
+            
+            if (skybox) {
+                // Wait a bit for the texture to load
+                setTimeout(() => {
+                    const skyboxEl = skybox.getObject3D('mesh');
+                    if (skyboxEl && skyboxEl.material && skyboxEl.material.map && skyboxEl.material.map.image) {
+                        console.log('Skybox image loaded successfully');
+                        statusEl.textContent = '✅ Skybox: Imagen cargada';
+                        statusEl.style.color = '#10b981';
+                    } else {
+                        console.log('Skybox image failed to load, using fallback color');
+                        statusEl.textContent = '⚠️ Skybox: Usando color de respaldo';
+                        statusEl.style.color = '#f59e0b';
+                    }
+                }, 2000);
+            }
+        }
+
+        // Show object information
+        function showObjectInfo(element) {
+            console.log('showObjectInfo called with element:', element);
+            
+            const name = element.getAttribute('data-name');
+            const info = element.getAttribute('data-info');
+            
+            console.log('Object data - name:', name, 'info:', info);
+            
+            if (name && info) {
+                const infoPanel = document.getElementById('infoPanel');
+                const infoTitle = document.getElementById('infoTitle');
+                const infoText = document.getElementById('infoText');
+                
+                if (infoPanel && infoTitle && infoText) {
+                    infoTitle.setAttribute('value', name);
+                    infoText.setAttribute('value', info);
+                    infoPanel.setAttribute('visible', 'true');
+                    
+                    // Show video button only for Unitree Go2
+                    if (name === 'Unitree Go2' && videoButton) {
+                        videoButton.setAttribute('visible', 'true');
+                        console.log('Video button made visible for Unitree Go2');
+                    } else if (videoButton) {
+                        videoButton.setAttribute('visible', 'false');
+                    }
+                    
+                    // Hide panel after 10 seconds
+                    setTimeout(() => {
+                        infoPanel.setAttribute('visible', 'false');
+                        if (videoButton) {
+                            videoButton.setAttribute('visible', 'false');
+                        }
+                    }, 10000);
+                    
+                    console.log('Successfully showing info for:', name);
+                } else {
+                    console.error('Could not find info panel elements');
+                }
+            } else {
+                console.error('Missing name or info for element:', element);
+            }
+        }
+
+                                  // Play 360 video function
+          function playVideo360() {
+              const labSky = document.getElementById('skybox');
+              const sphere = document.getElementById('videoSphere');
+              const videoEl = document.getElementById('video360');
+              const backBtn = document.getElementById('backToLabButton');
+              
+              // Cambia a modo video 360
+              labSky.setAttribute('visible', 'false');
+              sphere.setAttribute('visible', 'true');
+              backBtn.setAttribute('visible', 'true');
+              
+              // Intenta reproducir el <video> real
+              videoEl.play().then(() => {
+                  document.getElementById('interactionStatus').textContent =
+                      'Video 360°: Mira alrededor moviendo el cursor';
+                  console.log('Playing 360 video');
+              }).catch(err => {
+                  console.warn('Autoplay bloqueo:', err);
+                  alert('Toca la pantalla o haz click para permitir la reproducción y vuelve a intentar.');
+              });
+          }
+          
+          // Back to lab function
+          function backToLab() {
+              const labSky = document.getElementById('skybox');
+              const sphere = document.getElementById('videoSphere');
+              const videoEl = document.getElementById('video360');
+              const backBtn = document.getElementById('backToLabButton');
+              
+              // Detén video y vuelve al lab
+              videoEl.pause();
+              videoEl.currentTime = 0;
+              
+              sphere.setAttribute('visible', 'false');
+              labSky.setAttribute('visible', 'true');
+              backBtn.setAttribute('visible', 'false');
+              
+              document.getElementById('interactionStatus').textContent =
+                  'Interacción: Haz click en los objetos';
+              console.log('Back to lab');
+          }
+
+        // Close video function
+        function closeVideo() {
+            const videoOverlay = document.getElementById('videoOverlay');
+            const video = document.getElementById('robotVideo');
+            
+            video.pause();
+            video.currentTime = 0;
+            videoOverlay.style.display = 'none';
+            
+            console.log('Video closed');
+        }
+
+        // Add some basic animation
+        setInterval(() => {
+            const cube = document.querySelector('.movable');
+            if (cube) {
+                const rotation = cube.getAttribute('rotation');
+                cube.setAttribute('rotation', {
+                    x: rotation.x + 1,
+                    y: rotation.y + 1,
+                    z: rotation.z
+                });
+            }
+        }, 50);
+
+                 // Make functions global
+         window.showObjectInfo = showObjectInfo;
+         window.playVideo360 = playVideo360;
+         window.backToLab = backToLab;
+         window.closeVideo = closeVideo;
+
+                           // Add keyboard shortcuts
+          document.addEventListener('keydown', function(event) {
+              if (event.key === 'Escape') {
+                  // If in video mode, go back to lab, otherwise close overlay video
+                  const videoSphere = document.getElementById('videoSphere');
+                  if (videoSphere && videoSphere.getAttribute('visible') === 'true') {
+                      backToLab();
+                  } else {
+                      closeVideo();
+                  }
+              }
+          });
+
+        console.log('A-Frame Mirai Skybox Fixed page loaded successfully!');
+    </script>
+</body>
+</html>

@@ -59,104 +59,75 @@
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Top Section -->
-        <div class="top-section">
-            <div class="welcome-section">
-                <h1 class="welcome-title">Welcome, User</h1>
-            </div>
-            
-            <!-- VR Hero Section -->
-            <div class="vr-hero-section">
-                <div class="vr-hero-card">
-                    <div class="vr-hero-content">
-                        <div class="vr-hero-text">
-                            <h2>🌍 Explora el Mundo en VR</h2>
-                            <p>Visita laboratorios de innovación, centros tecnológicos y lugares emblemáticos de Japón, México y Francia en realidad virtual inmersiva.</p>
-                            <div class="vr-features">
-                                <span class="vr-feature"><i class="fas fa-vr-cardboard"></i> Inmersión Total</span>
-                                <span class="vr-feature"><i class="fas fa-globe"></i> 9 Ciudades</span>
-                                <span class="vr-feature"><i class="fas fa-map-marker-alt"></i> 25+ Ubicaciones</span>
-                            </div>
-                        </div>
-                        <div class="vr-hero-action">
-                            <button class="vr-hero-btn" id="openVRToursBtn">
-                                <i class="fas fa-play"></i>
-                                <span>Iniciar Tour VR</span>
-                            </button>
-                            <div class="vr-stats">
-                                <div class="vr-stat">
-                                    <span class="stat-number">12</span>
-                                    <span class="stat-label">Sesiones</span>
-                                </div>
-                                <div class="vr-stat">
-                                    <span class="stat-number">6h45m</span>
-                                    <span class="stat-label">Tiempo VR</span>
-                                </div>
-                            </div>
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome, User</h1>
+        </div>
+        
+        <!-- VR Hero Section -->
+        <div class="vr-hero-section">
+            <div class="vr-hero-card">
+                <div class="vr-hero-content">
+                    <div class="vr-hero-text">
+                        <h2>🚀 Bienvenido a GCA Virtual</h2>
+                        <p>Explora laboratorios de innovación en Japón, México y Francia con realidad virtual inmersiva. ¡Comienza tu aventura ahora!</p>
+                        <div class="vr-features">
+                            <span class="vr-feature"><i class="fas fa-vr-cardboard"></i> WebXR Ready</span>
+                            <span class="vr-feature"><i class="fas fa-globe"></i> 3 Países</span>
+                            <span class="vr-feature"><i class="fas fa-star"></i> Gamificado</span>
                         </div>
                     </div>
-                    <div class="vr-hero-visual">
-                        <div class="world-map-3d">
-                            <div class="globe-container">
-                                <div class="globe">
-                                    <div class="globe-surface">
-                                        <div class="continent north-america"></div>
-                                        <div class="continent south-america"></div>
-                                        <div class="continent europe"></div>
-                                        <div class="continent africa"></div>
-                                        <div class="continent asia"></div>
-                                        <div class="continent australia"></div>
-                                    </div>
+                    <div class="vr-hero-action">
+                        <button class="vr-hero-btn primary-cta" id="openVRToursBtn">
+                            <i class="fas fa-rocket"></i>
+                            <span>🥽 Explorar en VR</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="vr-hero-visual">
+                    <div class="world-map-3d">
+                        <div class="globe-container">
+                            <div class="globe">
+                                <div class="globe-surface">
+                                    <div class="continent north-america"></div>
+                                    <div class="continent south-america"></div>
+                                    <div class="continent europe"></div>
+                                    <div class="continent africa"></div>
+                                    <div class="continent asia"></div>
+                                    <div class="continent australia"></div>
                                 </div>
                             </div>
-                            <div class="map-pin japan" style="top: 25%; left: 85%;">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Japón</span>
-                            </div>
-                            <div class="map-pin mexico" style="top: 45%; left: 20%;">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>México</span>
-                            </div>
-                            <div class="map-pin france" style="top: 35%; left: 45%;">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Francia</span>
-                            </div>
+                        </div>
+                        <div class="map-pin japan" style="top: 25%; left: 85%;">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Japón</span>
+                        </div>
+                        <div class="map-pin mexico" style="top: 45%; left: 20%;">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>México</span>
+                        </div>
+                        <div class="map-pin france" style="top: 35%; left: 45%;">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Francia</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Metrics Section -->
-        <div class="metrics-section">
-            <div class="metric-card">
-                <div class="metric-header">Sessions</div>
-                <div class="metric-value">12</div>
+        <!-- Simplified Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Sesiones</div>
             </div>
-            
-            <div class="metric-card gradient-purple">
-                <div class="metric-header">Time in VR</div>
-                <div class="metric-value">6h45m</div>
+            <div class="stat-item">
+                <div class="stat-number">6h45m</div>
+                <div class="stat-label">Tiempo VR</div>
             </div>
-            
-            <div class="metric-card">
-                <div class="metric-header">Interactions</div>
-                <div class="metric-value">134</div>
-                <div class="metric-chart">
-                    <div class="chart-line"></div>
-                </div>
-            </div>
-            
-            <div class="quick-actions-card">
-                <div class="card-title">Quick Actions</div>
-                <button class="btn-secondary">
-                    <i class="fas fa-download"></i>
-                    Export CSV
-                </button>
-                <button class="btn-secondary">
-                    <i class="fas fa-cog"></i>
-                    Settings
-                </button>
+            <div class="stat-item">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Badges</div>
             </div>
         </div>
 
@@ -183,27 +154,18 @@
                     </div>
                     
                     <div class="activity-item">
-                        <div class="activity-dot grey"></div>
-                        <div class="activity-content">
-                            <div class="activity-text">Session finished</div>
-                            <div class="activity-time">Yesterday</div>
-                        </div>
-                    </div>
-                    
-                    <div class="activity-item">
-                        <div class="activity-dot grey"></div>
-                        <div class="activity-content">
-                            <div class="activity-text">Session started</div>
-                            <div class="activity-time">Yesterday</div>
-                        </div>
-                    </div>
-                    
-                    <div class="activity-item">
                         <div class="activity-dot blue"></div>
                         <div class="activity-content">
                             <div class="activity-text">Completed 'Basics of Robotics'</div>
                             <div class="activity-time">2d ago</div>
                         </div>
+                    </div>
+                    
+                    <div class="view-all-activity">
+                        <a href="#" class="activity-link">
+                            <i class="fas fa-arrow-right"></i>
+                            Ver toda la actividad
+                        </a>
                     </div>
                 </div>
             </div>
@@ -249,36 +211,38 @@
                         </div>
                     </div>
                     
-                    <div class="tour-card" data-country="mexico">
+                    <div class="tour-card coming-soon" data-country="mexico">
                         <div class="tour-image">
                             <img src="../assets/mexico-preview.jpg" alt="México" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=México'">
-                            <div class="tour-overlay">
-                                <i class="fas fa-map-marker-alt"></i>
+                            <div class="tour-overlay coming-soon-overlay">
+                                <i class="fas fa-clock"></i>
                             </div>
+                            <div class="coming-soon-badge">Coming Soon</div>
                         </div>
                         <div class="tour-info">
                             <h3>🇲🇽 México</h3>
                             <p>Descubre la innovación tecnológica en México</p>
                             <div class="tour-stats">
                                 <span><i class="fas fa-city"></i> 3 ciudades</span>
-                                <span><i class="fas fa-star"></i> 4.6</span>
+                                <span><i class="fas fa-clock"></i> Próximamente</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="tour-card" data-country="france">
+                    <div class="tour-card coming-soon" data-country="france">
                         <div class="tour-image">
                             <img src="../assets/france-preview.jpg" alt="Francia" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=Francia'">
-                            <div class="tour-overlay">
-                                <i class="fas fa-map-marker-alt"></i>
+                            <div class="tour-overlay coming-soon-overlay">
+                                <i class="fas fa-clock"></i>
                             </div>
+                            <div class="coming-soon-badge">Coming Soon</div>
                         </div>
                         <div class="tour-info">
                             <h3>🇫🇷 Francia</h3>
                             <p>Visita centros de investigación en Francia</p>
                             <div class="tour-stats">
                                 <span><i class="fas fa-city"></i> 3 ciudades</span>
-                                <span><i class="fas fa-star"></i> 4.7</span>
+                                <span><i class="fas fa-clock"></i> Próximamente</span>
                             </div>
                         </div>
                     </div>

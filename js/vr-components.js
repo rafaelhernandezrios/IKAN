@@ -3,6 +3,285 @@
  * Enhanced components for A-Frame VR experience
  */
 
+// VR Detection and Fallback Controls Component
+AFRAME.registerComponent('vr-fallback-controls', {
+    schema: {
+        movementSpeed: { type: 'number', default: 0.1 },
+        rotationSpeed: { type: 'number', default: 2.0 },
+        enableKeyboard: { type: 'boolean', default: true },
+        enableMouse: { type: 'boolean', default: true }
+    },
+    
+    init: function() {
+        this.isVRSupported = false;
+        this.isVRActive = false;
+        this.keys = {};
+        this.mouseX = 0;
+        this.mouseY = 0;
+        this.isPointerLocked = false;
+        
+        this.checkVRSupport();
+        this.setupEventListeners();
+        this.setupFallbackControls();
+    },
+    
+    checkVRSupport: function() {
+        if (navigator.xr) {
+            navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+                this.isVRSupported = supported;
+                if (supported) {
+                    this.showVRButton();
+                    console.log('VR supported - VR mode available');
+                } else {
+                    this.enableFallbackMode();
+                    console.log('VR not supported - Using fallback controls');
+                }
+            }).catch(() => {
+                this.enableFallbackMode();
+                console.log('VR check failed - Using fallback controls');
+            });
+        } else {
+            this.enableFallbackMode();
+            console.log('WebXR not available - Using fallback controls');
+        }
+    },
+    
+    showVRButton: function() {
+        // Create VR entry button
+        const vrButton = document.createElement('button');
+        vrButton.id = 'vr-entry-button';
+        vrButton.innerHTML = '🥽 ENTRAR VR';
+        vrButton.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Segoe UI', sans-serif;
+        `;
+        
+        vrButton.addEventListener('click', () => {
+            this.enterVR();
+        });
+        
+        document.body.appendChild(vrButton);
+        
+        // Show instructions
+        this.showInstructions('VR disponible - Haz clic en "ENTRAR VR" o usa WASD para moverte');
+    },
+    
+    enableFallbackMode: function() {
+        this.showInstructions('Modo teclado activo - Usa WASD para moverte, ratón para mirar');
+        
+        // Enable pointer lock for mouse look
+        if (this.data.enableMouse) {
+            this.enablePointerLock();
+        }
+    },
+    
+    showInstructions: function(message) {
+        const instructions = document.createElement('div');
+        instructions.id = 'vr-instructions';
+        instructions.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 16px;
+            z-index: 1000;
+            text-align: center;
+        `;
+        instructions.textContent = message;
+        
+        document.body.appendChild(instructions);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (instructions.parentNode) {
+                instructions.remove();
+            }
+        }, 5000);
+    },
+    
+    setupEventListeners: function() {
+        // Keyboard events
+        document.addEventListener('keydown', (event) => {
+            this.keys[event.code] = true;
+        });
+        
+        document.addEventListener('keyup', (event) => {
+            this.keys[event.code] = false;
+        });
+        
+        // Mouse events for pointer lock
+        document.addEventListener('click', () => {
+            if (!this.isVRActive && this.data.enableMouse) {
+                this.requestPointerLock();
+            }
+        });
+        
+        document.addEventListener('mousemove', (event) => {
+            if (this.isPointerLocked && !this.isVRActive) {
+                this.mouseX = event.movementX || 0;
+                this.mouseY = event.movementY || 0;
+            }
+        });
+        
+        // Pointer lock events
+        document.addEventListener('pointerlockchange', () => {
+            this.isPointerLocked = document.pointerLockElement !== null;
+        });
+    },
+    
+    enablePointerLock: function() {
+        const canvas = this.el.sceneEl.canvas;
+        if (canvas) {
+            canvas.style.cursor = 'crosshair';
+        }
+    },
+    
+    requestPointerLock: function() {
+        const canvas = this.el.sceneEl.canvas;
+        if (canvas && canvas.requestPointerLock) {
+            canvas.requestPointerLock();
+        }
+    },
+    
+    setupFallbackControls: function() {
+        const camera = this.el;
+        const speed = this.data.movementSpeed;
+        const rotationSpeed = this.data.rotationSpeed;
+        
+        // Movement and rotation update function
+        this.updateControls = () => {
+            if (this.isVRActive) return; // Don't update if in VR
+            
+            const position = camera.getAttribute('position');
+            const rotation = camera.getAttribute('rotation');
+            
+            // Keyboard movement
+            if (this.keys['KeyW'] || this.keys['ArrowUp']) {
+                position.z -= Math.cos(rotation.y * Math.PI / 180) * speed;
+                position.x -= Math.sin(rotation.y * Math.PI / 180) * speed;
+            }
+            if (this.keys['KeyS'] || this.keys['ArrowDown']) {
+                position.z += Math.cos(rotation.y * Math.PI / 180) * speed;
+                position.x += Math.sin(rotation.y * Math.PI / 180) * speed;
+            }
+            if (this.keys['KeyA'] || this.keys['ArrowLeft']) {
+                position.x -= Math.cos(rotation.y * Math.PI / 180) * speed;
+                position.z += Math.sin(rotation.y * Math.PI / 180) * speed;
+            }
+            if (this.keys['KeyD'] || this.keys['ArrowRight']) {
+                position.x += Math.cos(rotation.y * Math.PI / 180) * speed;
+                position.z -= Math.sin(rotation.y * Math.PI / 180) * speed;
+            }
+            
+            // Mouse look
+            if (this.isPointerLocked) {
+                rotation.y -= this.mouseX * rotationSpeed * 0.01;
+                rotation.x -= this.mouseY * rotationSpeed * 0.01;
+                
+                // Clamp vertical rotation
+                rotation.x = Math.max(-90, Math.min(90, rotation.x));
+                
+                this.mouseX = 0;
+                this.mouseY = 0;
+            }
+            
+            // Apply changes
+            camera.setAttribute('position', position);
+            camera.setAttribute('rotation', rotation);
+        };
+        
+        // Start the control loop
+        this.controlLoop = setInterval(this.updateControls, 16); // ~60fps
+    },
+    
+    enterVR: async function() {
+        if (!this.isVRSupported) {
+            console.log('VR not supported');
+            return;
+        }
+        
+        try {
+            this.isVRActive = true;
+            
+            // Hide VR button
+            const vrButton = document.getElementById('vr-entry-button');
+            if (vrButton) {
+                vrButton.style.display = 'none';
+            }
+            
+            // Request VR session
+            const session = await navigator.xr.requestSession('immersive-vr', {
+                optionalFeatures: ['local-floor', 'bounded-floor'],
+                requiredFeatures: ['local']
+            });
+            
+            // Set up VR session
+            const scene = this.el.sceneEl;
+            const renderer = scene.renderer;
+            
+            await renderer.xr.setSession(session);
+            renderer.xr.setReferenceSpaceType('local');
+            
+            console.log('VR session started');
+            
+            // Handle VR session end
+            session.addEventListener('end', () => {
+                this.isVRActive = false;
+                console.log('VR session ended');
+                
+                // Show VR button again
+                if (vrButton) {
+                    vrButton.style.display = 'block';
+                }
+            });
+            
+        } catch (error) {
+            this.isVRActive = false;
+            console.error('Failed to enter VR:', error);
+            
+            // Show VR button again on error
+            const vrButton = document.getElementById('vr-entry-button');
+            if (vrButton) {
+                vrButton.style.display = 'block';
+            }
+        }
+    },
+    
+    remove: function() {
+        // Clean up
+        if (this.controlLoop) {
+            clearInterval(this.controlLoop);
+        }
+        
+        // Remove UI elements
+        const vrButton = document.getElementById('vr-entry-button');
+        if (vrButton) {
+            vrButton.remove();
+        }
+        
+        const instructions = document.getElementById('vr-instructions');
+        if (instructions) {
+            instructions.remove();
+        }
+    }
+});
+
 AFRAME.registerComponent('vr-interaction', {
     schema: {
         type: { type: 'string', default: 'click' },

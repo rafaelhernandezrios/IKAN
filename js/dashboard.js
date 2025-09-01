@@ -303,10 +303,17 @@ function setupModalEventListeners() {
         });
     }
     
-    // Country cards - show cities submenu
+    // Country cards - show cities submenu (only for available countries)
     const countryCards = document.querySelectorAll('.tour-card[data-country]');
     countryCards.forEach(card => {
         card.addEventListener('click', function() {
+            // Check if the card is coming soon
+            if (this.classList.contains('coming-soon')) {
+                // Show coming soon notification
+                showNotification('Este tour estará disponible próximamente', 'info');
+                return;
+            }
+            
             const country = this.dataset.country;
             showCitiesSubmenu(country);
         });
@@ -411,6 +418,24 @@ function showCityMapSubmenu(cityName, cityTitle) {
         // Load and display city map
         loadCityMap(cityName, cityTitle, cityMapContainer);
         
+        // Remove any existing info panel
+        const existingInfoPanel = cityMapSubmenu.querySelector('.city-map-info');
+        if (existingInfoPanel) {
+            existingInfoPanel.remove();
+        }
+        
+        // Add city info panel to submenu (not on map)
+        const cityMapData = getCityMapData(cityName, cityTitle);
+        const infoPanel = createCityInfoPanel(cityMapData);
+        
+        // Insert info panel after the submenu header
+        const submenuHeader = cityMapSubmenu.querySelector('.submenu-header');
+        if (submenuHeader && submenuHeader.nextSibling) {
+            cityMapSubmenu.insertBefore(infoPanel, submenuHeader.nextSibling);
+        } else {
+            cityMapSubmenu.appendChild(infoPanel);
+        }
+        
         // Setup VR button event listeners
         setupVRButtonListeners();
     }
@@ -447,10 +472,6 @@ function loadCityMap(cityName, cityTitle, container) {
     // Add VR buttons
     addVRButtonsToMap(mapContainer, cityMapData.vrLocations);
     
-    // Add city info panel
-    const infoPanel = createCityInfoPanel(cityMapData);
-    mapContainer.appendChild(infoPanel);
-    
     container.appendChild(mapContainer);
 }
 
@@ -473,15 +494,22 @@ function createMapPlaceholder(cityTitle, description) {
 function addVRButtonsToMap(mapContainer, vrLocations) {
     vrLocations.forEach(location => {
         const vrButton = document.createElement('button');
-        vrButton.className = 'vr-button';
+        
+        // Determine if location is coming soon
+        const isComingSoon = isLocationComingSoon(location.id);
+        vrButton.className = `vr-button ${isComingSoon ? 'coming-soon' : ''}`;
         vrButton.style.left = location.x + '%';
         vrButton.style.top = location.y + '%';
         vrButton.dataset.location = location.id;
         vrButton.dataset.city = location.city;
         
+        // Add coming soon indicator to tooltip
+        const tooltipText = isComingSoon ? `${location.name} (Coming Soon)` : location.name;
+        
         vrButton.innerHTML = `
             <i class="${location.icon}"></i>
-            <div class="button-tooltip">${location.name}</div>
+            <div class="button-tooltip">${tooltipText}</div>
+            ${isComingSoon ? '<div class="coming-soon-indicator">⏳</div>' : ''}
         `;
         
         mapContainer.appendChild(vrButton);
@@ -518,12 +546,15 @@ function setupVRButtonListeners() {
             const cityName = this.dataset.city;
             const locationName = this.querySelector('.button-tooltip').textContent;
             
+            // Check if button is coming soon
+            if (this.classList.contains('coming-soon')) {
+                showNotification(`⏳ ${locationName} estará disponible próximamente`, 'info');
+                return;
+            }
+            
             // Special case: osaka-research goes directly to VR
             if (locationId === 'osaka-research') {
                 startVRSession(locationId, cityName, locationName);
-            } else if (locationId === 'osaka-innovation') {
-                // Special case: osaka-innovation (Tsutenkaku) is locked
-                showNotification(`🔒 ${locationName} está bloqueado`, 'warning');
             } else {
                 // For other locations, show notification for now
                 showNotification(`Próximamente: Tour VR de ${locationName}`, 'info');
@@ -904,29 +935,34 @@ function loadCitiesForCountry(country, citiesGrid) {
 function getCitiesData(country) {
     const citiesByCountry = {
         'japan': [
-            {
-                name: 'Tokio 東京',
-                description: 'Capital tecnológica y centro de innovación',
-                image: '../assets/tokyo-preview.jpg',
-                duration: '20 min',
-                rating: '4.9',
-                badge: 'Capital'
-            },
+            // Available cities
             {
                 name: 'Osaka 大阪',
                 description: 'Centro industrial y de investigación',
                 image: '../assets/osaka-preview.jpg',
                 duration: '18 min',
                 rating: '4.7',
-                badge: 'Industrial'
+                badge: 'Industrial',
+                available: true
+            },
+            // Coming Soon cities
+            {
+                name: 'Tokio 東京',
+                description: 'Capital tecnológica y centro de innovación',
+                image: '../assets/tokyo-preview.jpg',
+                duration: '20 min',
+                rating: 'Coming Soon',
+                badge: 'Coming Soon',
+                available: false
             },
             {
                 name: 'Kyoto　京都',
                 description: 'Tradición y tecnología moderna',
                 image: '../assets/kyoto-preview.jpg',
                 duration: '15 min',
-                rating: '4.8',
-                badge: 'Cultural'
+                rating: 'Coming Soon',
+                badge: 'Coming Soon',
+                available: false
             }
         ],
         'mexico': [
@@ -991,23 +1027,29 @@ function getCitiesData(country) {
  */
 function createCityCard(city) {
     const cityCard = document.createElement('div');
-    cityCard.className = 'city-card';
+    cityCard.className = `city-card ${city.available ? '' : 'coming-soon'}`;
     cityCard.dataset.city = city.name.toLowerCase().replace(/\s+/g, '-');
+    
+    // Determine icon and badge content based on availability
+    const overlayIcon = city.available ? 'fas fa-play' : 'fas fa-clock';
+    const badgeContent = city.available ? city.badge : 'Coming Soon';
+    const ratingIcon = city.available ? 'fas fa-star' : 'fas fa-clock';
+    const ratingText = city.available ? city.rating : 'Próximamente';
     
     cityCard.innerHTML = `
         <div class="city-image">
             <img src="${city.image}" alt="${city.name}" onerror="this.src='https://via.placeholder.com/300x200/1e293b/ffffff?text=${city.name}'">
-            <div class="city-overlay">
-                <i class="fas fa-play"></i>
+            <div class="city-overlay ${city.available ? '' : 'coming-soon-overlay'}">
+                <i class="${overlayIcon}"></i>
             </div>
-            <div class="city-badge">${city.badge}</div>
+            <div class="city-badge ${city.available ? '' : 'coming-soon-badge'}">${badgeContent}</div>
         </div>
         <div class="city-info">
             <h4>${city.name}</h4>
             <p>${city.description}</p>
             <div class="city-stats">
                 <span><i class="fas fa-clock"></i> ${city.duration}</span>
-                <span><i class="fas fa-star"></i> ${city.rating}</span>
+                <span><i class="${ratingIcon}"></i> ${ratingText}</span>
             </div>
         </div>
     `;
@@ -1022,6 +1064,13 @@ function setupCityCardListeners() {
     const cityCards = document.querySelectorAll('.city-card');
     cityCards.forEach(card => {
         card.addEventListener('click', function() {
+            // Check if the city is coming soon
+            if (this.classList.contains('coming-soon')) {
+                // Show coming soon notification
+                showNotification('Esta ciudad estará disponible próximamente', 'info');
+                return;
+            }
+            
             const cityName = this.dataset.city;
             const cityTitle = this.querySelector('h4').textContent;
             
@@ -1288,4 +1337,15 @@ function handleLogout() {
             }, 1000);
         }
     }
-} 
+}
+
+/**
+ * Helper function to determine if a location is coming soon
+ */
+function isLocationComingSoon(locationId) {
+    const comingSoonLocations = [
+        'osaka-industry',    // Osaka Castle
+        'osaka-innovation'   // Torre de Tsutenkaku
+    ];
+    return comingSoonLocations.includes(locationId);
+}
