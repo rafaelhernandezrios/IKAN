@@ -1113,8 +1113,8 @@ function startVRSession(locationId, cityName, locationName) {
             localStorage.setItem('gca_virtual_selected_city', cityName);
             localStorage.setItem('gca_virtual_selected_location', locationId);
             
-            // Redirect to VR experience
-            window.location.href = 'vr/quest3-vr-simple-hands.html';
+                    // Redirect to VR experience selector
+        window.location.href = 'vr/vr-experience-selector.html';
         }, 1500);
     }
 }

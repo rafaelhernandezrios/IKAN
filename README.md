@@ -10,6 +10,17 @@ Una plataforma educativa web con experiencia VR inmersiva para Oculus Quest 3.
 - **Compatible con Oculus Quest 3**
 - **Diseño responsive** para móviles y desktop
 
+## 🆕 **Nueva Funcionalidad: Selector de Experiencia VR**
+
+El sistema ahora incluye un **Selector Inteligente de Experiencia VR** que:
+
+- 🎯 **Detecta automáticamente** el tipo de dispositivo del usuario
+- 🚀 **Redirige inteligentemente** a la experiencia más adecuada
+- 🗺️ **Mantiene el contexto** de la ciudad seleccionada
+- 💫 **Interfaz moderna** con glassmorphism y animaciones suaves
+
+**Archivo principal**: `pages/vr/vr-experience-selector.html`
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -20,7 +31,9 @@ IKAN_VR/
 │   ├── 📄 dashboard.html            # Dashboard principal
 │   ├── 📄 badges.html               # Página de badges
 │   └── 📁 vr/                       # Experiencias VR
-│       └── 📄 quest3-vr-simple-hands.html  # Experiencia VR (funcionando)
+│       ├── 📄 vr-experience-selector.html   # Selector de experiencia VR
+│       ├── 📄 quest3-vr-simple-hands.html  # Experiencia VR nativa
+│       └── 📄 aframe-mirai-skybox-fixed.html # Experiencia A-Frame
 ├── 📁 css/                          # Estilos
 ├── 📁 js/                           # JavaScript
 ├── 📁 assets/                       # Recursos multimedia
@@ -89,15 +102,37 @@ Para acceder al sistema, usa estas credenciales:
 
 ## 🥽 Experiencia VR
 
-### Características de la VR:
+### 🎯 **Selector Inteligente de Experiencia VR**
+- **Detección automática** de dispositivos (VR, Desktop, Mobile)
+- **Redirección inteligente** a la experiencia más adecuada
+- **Integración completa** con el sistema de selección de ciudades
+- **Interfaz moderna** con glassmorphism y animaciones
+
+### 🚀 **Experiencias Disponibles**
+- **🥽 Dispositivo VR**: `quest3-vr-simple-hands.html` - Experiencia nativa VR optimizada
+- **💻 Desktop**: `aframe-mirai-skybox-fixed.html` - Controles de teclado/ratón
+- **📱 Mobile**: `aframe-mirai-skybox-fixed.html` - Controles táctiles
+
+### 🎮 **Características de la VR:**
 - **Imagen 360°**: Laboratorio Mirai como fondo
 - **Renderizado optimizado**: Three.js con configuración para Quest 3
 - **Sesión estable**: Sin colgadas ni errores
 - **Compatibilidad**: Funciona en Oculus Quest 3
 
-### Para usar en Quest 3:
+### 🎯 **Flujo de Uso Optimizado**
+1. **Accede desde cualquier dispositivo** (VR, Desktop, Mobile)
+2. **Haz login** con las credenciales
+3. **Selecciona país y ciudad** en el dashboard
+4. **Haz click en "🥽 Explorar en VR"**
+5. **Elige tu tipo de dispositivo** en el selector
+6. **¡Disfruta la experiencia optimizada!**
+
+### 📱 **Para usar en Quest 3:**
 1. **Accede desde el navegador** del Quest 3
 2. **Haz login** con las credenciales
+3. **Selecciona ciudad** y haz click en "Explorar en VR"
+4. **Elige "🥽 Dispositivo VR"** en el selector
+5. **Se redirige automáticamente** a la experiencia optimizada
 3. **Ve al dashboard** y haz clic en "Entrar a la Sesión"
 4. **Disfruta** de la experiencia VR
 
