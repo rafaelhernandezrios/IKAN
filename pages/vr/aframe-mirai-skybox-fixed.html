@@ -484,6 +484,12 @@
                 };
                 sphere.setAttribute('rotation', sphereRotation);
                
+               // Forzar condiciones de autoplay: muted + playsinline
+               try { videoEl.muted = true; } catch (e) {}
+               videoEl.setAttribute('muted', 'true');
+               videoEl.setAttribute('playsinline', 'true');
+               videoEl.setAttribute('webkit-playsinline', 'true');
+
                // Intenta reproducir el <video> real
                videoEl.play().then(() => {
                    document.getElementById('interactionStatus').textContent =
@@ -491,7 +497,17 @@
                    console.log('Playing 360 video with camera orientation:', cameraRotation);
                }).catch(err => {
                    console.warn('Autoplay bloqueo:', err);
-                   alert('Toca la pantalla o haz click para permitir la reproducción y vuelve a intentar.');
+                   const status = document.getElementById('interactionStatus');
+                   status.textContent = 'Toca o haz click para iniciar el video 360°';
+                   const resumePlayback = () => {
+                       videoEl.play().then(() => {
+                           status.textContent = 'Video 360°: Mira alrededor moviendo el cursor';
+                       }).catch(e2 => {
+                           console.warn('Segundo intento de reproducción falló:', e2);
+                       });
+                   };
+                   document.body.addEventListener('click', resumePlayback, { once: true });
+                   document.body.addEventListener('touchend', resumePlayback, { once: true });
                });
            }
           
