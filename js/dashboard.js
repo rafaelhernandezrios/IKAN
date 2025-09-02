@@ -574,7 +574,7 @@ function getCityMapData(cityName, cityTitle) {
         'tokio-東京': {
             name: 'Tokio 東京',
             description: 'Capital tecnológica y centro de innovación de Japón',
-            mapImage: '../assets/tokyo-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/tokyo-map.jpg',
             locations: 4,
             totalDuration: '45 min',
             vrLocations: [
@@ -615,7 +615,7 @@ function getCityMapData(cityName, cityTitle) {
         'osaka-大阪': {
             name: 'Osaka 大阪',
             description: 'Puntos de interes en Osaka',
-            mapImage: '../assets/osaka-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/osaka-map.jpg',
             locations: 3,
             totalDuration: '35 min',
             vrLocations: [
@@ -648,7 +648,7 @@ function getCityMapData(cityName, cityTitle) {
         'kyoto-京都': {
             name: 'Kyoto 京都',
             description: 'Tradición y tecnología moderna en armonía',
-            mapImage: '../assets/kyoto-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/kyoto-map.jpg',
             locations: 3,
             totalDuration: '30 min',
             vrLocations: [
@@ -681,7 +681,7 @@ function getCityMapData(cityName, cityTitle) {
         'ciudad-de-mexico': {
             name: 'Ciudad de México',
             description: 'Centro de innovación tecnológica de México',
-            mapImage: '../assets/mexico-city-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/mexico-city-map.jpg',
             locations: 4,
             totalDuration: '40 min',
             vrLocations: [
@@ -722,7 +722,7 @@ function getCityMapData(cityName, cityTitle) {
         'monterrey': {
             name: 'Monterrey',
             description: 'Hub tecnológico del norte de México',
-            mapImage: '../assets/monterrey-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/monterrey-map.jpg',
             locations: 3,
             totalDuration: '35 min',
             vrLocations: [
@@ -755,7 +755,7 @@ function getCityMapData(cityName, cityTitle) {
         'guadalajara': {
             name: 'Guadalajara',
             description: 'Silicon Valley mexicano',
-            mapImage: '../assets/guadalajara-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/guadalajara-map.jpg',
             locations: 3,
             totalDuration: '38 min',
             vrLocations: [
@@ -788,7 +788,7 @@ function getCityMapData(cityName, cityTitle) {
         'paris': {
             name: 'París',
             description: 'Centro de investigación y desarrollo europeo',
-            mapImage: '../assets/paris-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/paris-map.jpg',
             locations: 4,
             totalDuration: '50 min',
             vrLocations: [
@@ -829,7 +829,7 @@ function getCityMapData(cityName, cityTitle) {
         'lyon': {
             name: 'Lyon',
             description: 'Polo tecnológico y científico francés',
-            mapImage: '../assets/lyon-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/lyon-map.jpg',
             locations: 3,
             totalDuration: '42 min',
             vrLocations: [
@@ -862,7 +862,7 @@ function getCityMapData(cityName, cityTitle) {
         'toulouse': {
             name: 'Toulouse',
             description: 'Centro aeroespacial y tecnológico',
-            mapImage: '../assets/toulouse-map.jpg',
+            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/toulouse-map.jpg',
             locations: 3,
             totalDuration: '45 min',
             vrLocations: [
@@ -939,7 +939,7 @@ function getCitiesData(country) {
             {
                 name: 'Osaka 大阪',
                 description: 'Centro industrial y de investigación',
-                image: '../assets/osaka-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/osaka-preview.jpg',
                 duration: '18 min',
                 rating: '4.7',
                 badge: 'Industrial',
@@ -949,7 +949,7 @@ function getCitiesData(country) {
             {
                 name: 'Tokio 東京',
                 description: 'Capital tecnológica y centro de innovación',
-                image: '../assets/tokyo-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/tokyo-preview.jpg',
                 duration: '20 min',
                 rating: 'Coming Soon',
                 badge: 'Coming Soon',
@@ -958,7 +958,7 @@ function getCitiesData(country) {
             {
                 name: 'Kyoto　京都',
                 description: 'Tradición y tecnología moderna',
-                image: '../assets/kyoto-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/kyoto-preview.jpg',
                 duration: '15 min',
                 rating: 'Coming Soon',
                 badge: 'Coming Soon',
@@ -969,7 +969,7 @@ function getCitiesData(country) {
             {
                 name: 'Ciudad de México',
                 description: 'Centro de innovación tecnológica',
-                image: '../assets/mexico-city-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/mexico-preview.jpg',
                 duration: '16 min',
                 rating: '4.6',
                 badge: 'Capital'
@@ -977,7 +977,7 @@ function getCitiesData(country) {
             {
                 name: 'Monterrey',
                 description: 'Hub tecnológico del norte',
-                image: '../assets/monterrey-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/monterrey-preview.jpg',
                 duration: '14 min',
                 rating: '4.5',
                 badge: 'Tecnológico'
@@ -985,7 +985,7 @@ function getCitiesData(country) {
             {
                 name: 'Guadalajara',
                 description: 'Silicon Valley mexicano',
-                image: '../assets/guadalajara-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/guadalajara-preview.jpg',
                 duration: '17 min',
                 rating: '4.7',
                 badge: 'Innovación'
@@ -995,7 +995,7 @@ function getCitiesData(country) {
             {
                 name: 'París',
                 description: 'Centro de investigación y desarrollo',
-                image: '../assets/paris-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/paris-preview.jpg',
                 duration: '22 min',
                 rating: '4.8',
                 badge: 'Capital'
@@ -1003,7 +1003,7 @@ function getCitiesData(country) {
             {
                 name: 'Lyon',
                 description: 'Polo tecnológico y científico',
-                image: '../assets/lyon-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/lyon-preview.jpg',
                 duration: '19 min',
                 rating: '4.6',
                 badge: 'Científico'
@@ -1011,7 +1011,7 @@ function getCitiesData(country) {
             {
                 name: 'Toulouse',
                 description: 'Centro aeroespacial y tecnológico',
-                image: '../assets/toulouse-preview.jpg',
+                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/toulouse-preview.jpg',
                 duration: '21 min',
                 rating: '4.7',
                 badge: 'Aeroespacial'
