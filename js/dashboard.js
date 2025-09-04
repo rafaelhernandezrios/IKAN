@@ -552,8 +552,8 @@ function setupVRButtonListeners() {
                 return;
             }
             
-            // Special case: osaka-research goes directly to VR
-            if (locationId === 'osaka-research') {
+            // Special cases: osaka-research and osaka-industry go directly to VR
+            if (locationId === 'osaka-research' || locationId === 'osaka-industry') {
                 startVRSession(locationId, cityName, locationName);
             } else {
                 // For other locations, show notification for now
@@ -615,7 +615,7 @@ function getCityMapData(cityName, cityTitle) {
         'osaka-大阪': {
             name: 'Osaka 大阪',
             description: 'Puntos de interes en Osaka',
-            mapImage: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/osaka-map.jpg',
+            mapImage: '../assets/osaka-map.jpg',
             locations: 3,
             totalDuration: '35 min',
             vrLocations: [
@@ -939,7 +939,7 @@ function getCitiesData(country) {
             {
                 name: 'Osaka 大阪',
                 description: 'Centro industrial y de investigación',
-                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/osaka-preview.jpg',
+                image: '../assets/osaka-preview.jpg',
                 duration: '18 min',
                 rating: '4.7',
                 badge: 'Industrial',
@@ -949,7 +949,7 @@ function getCitiesData(country) {
             {
                 name: 'Tokio 東京',
                 description: 'Capital tecnológica y centro de innovación',
-                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/tokyo-preview.jpg',
+                image: '../assets/tokyo-preview.jpg',
                 duration: '20 min',
                 rating: 'Coming Soon',
                 badge: 'Coming Soon',
@@ -958,7 +958,7 @@ function getCitiesData(country) {
             {
                 name: 'Kyoto　京都',
                 description: 'Tradición y tecnología moderna',
-                image: 'https://ikan-bucket.s3.us-east-2.amazonaws.com/kyoto-preview.jpg',
+                image: '../assets/kyoto-preview.jpg',
                 duration: '15 min',
                 rating: 'Coming Soon',
                 badge: 'Coming Soon',
@@ -1344,7 +1344,6 @@ function handleLogout() {
  */
 function isLocationComingSoon(locationId) {
     const comingSoonLocations = [
-        'osaka-industry',    // Osaka Castle
         'osaka-innovation'   // Torre de Tsutenkaku
     ];
     return comingSoonLocations.includes(locationId);

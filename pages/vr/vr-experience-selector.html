@@ -278,25 +278,32 @@
             const selectedCity = localStorage.getItem('gca_virtual_selected_city');
             const selectedLocation = localStorage.getItem('gca_virtual_selected_location');
 
-            // Redirigir según la selección
+                            // Redirigir según la selección
             setTimeout(() => {
                 let targetUrl = '';
                 
-                switch(experienceType) {
-                    case 'vr':
-                        // Para dispositivos VR, usar la versión optimizada
-                        targetUrl = 'quest3-vr-simple-hands.html';
-                        break;
-                    case 'desktop':
-                        // Para desktop, usar A-Frame con controles de teclado/ratón
-                        targetUrl = 'aframe-mirai-skybox-fixed.html';
-                        break;
-                    case 'mobile':
-                        // Para móviles, usar A-Frame con controles táctiles
-                        targetUrl = 'aframe-mirai-skybox-fixed.html';
-                        break;
-                    default:
-                        targetUrl = 'aframe-mirai-skybox-fixed.html';
+                // Determinar la experiencia basada en la ubicación seleccionada
+                if (selectedLocation === 'osaka-industry') {
+                    // Para el Castillo de Osaka, usar la experiencia específica
+                    targetUrl = 'aframe-osaka-castle.html';
+                } else {
+                    // Para otras ubicaciones, usar la experiencia del laboratorio
+                    switch(experienceType) {
+                        case 'vr':
+                            // Para dispositivos VR, usar la versión optimizada
+                            targetUrl = 'quest3-vr-simple-hands.html';
+                            break;
+                        case 'desktop':
+                            // Para desktop, usar A-Frame con controles de teclado/ratón
+                            targetUrl = 'aframe-mirai-skybox-fixed.html';
+                            break;
+                        case 'mobile':
+                            // Para móviles, usar A-Frame con controles táctiles
+                            targetUrl = 'aframe-mirai-skybox-fixed.html';
+                            break;
+                        default:
+                            targetUrl = 'aframe-mirai-skybox-fixed.html';
+                    }
                 }
 
                 // Agregar parámetros de la ciudad seleccionada si están disponibles

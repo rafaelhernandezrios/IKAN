@@ -180,3 +180,4 @@ console.log('Selected location:', localStorage.getItem('gca_virtual_selected_loc
 **Última actualización**: Diciembre 2024  
 **Autor**: Laboratorio Mirai  
 **Compatibilidad**: WebXR, A-Frame, Navegadores modernos
+

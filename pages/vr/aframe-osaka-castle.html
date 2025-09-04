@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Castillo de Osaka - A-Frame VR</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        a-scene {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+        
+        /* Ensure skybox renders properly */
+        a-sky {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        .controls-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            z-index: 1000;
+        }
+
+        .skybox-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        .interaction-status {
+            position: fixed;
+            top: 60px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(220, 38, 38, 0.9);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(220, 38, 38, 1);
+            transform: scale(1.05);
+        }
+
+        .castle-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .story-intro {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            font-size: 18px;
+            z-index: 1000;
+            text-align: center;
+            border: 3px solid #ffd700;
+            display: none;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .story-intro.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .story-intro h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        .story-intro p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .story-intro .start-btn {
+            background: #8B4513;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .story-intro .start-btn:hover {
+            background: #A0522D;
+            transform: scale(1.05);
+        }
+
+        .story-progress {
+            position: fixed;
+            top: 50%;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .orientation-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 1000;
+            max-width: 300px;
+            display: none;
+        }
+
+        .orientation-panel.show {
+            display: block;
+        }
+
+        .orientation-panel h4 {
+            margin: 0 0 10px 0;
+            color: #ffd700;
+        }
+
+        .orientation-panel button {
+            background: #8B4513;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            margin: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .orientation-panel button:hover {
+            background: #A0522D;
+            transform: scale(1.05);
+        }
+
+        .orientation-panel button.active {
+            background: #ffd700;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">Cargando Castillo de Osaka...</div>
+
+    <div class="info-panel">
+        <h3>🏯 Castillo de Osaka - A-Frame VR</h3>
+        <p>Experiencia VR 360° del histórico Castillo de Osaka</p>
+        <p style="margin-top: 10px; font-size: 12px;">
+            <a href="aframe-mirai-skybox-fixed.html" style="color: #3b82f6; text-decoration: none;">
+                🔧 Volver al Laboratorio Mirai
+            </a>
+        </p>
+    </div>
+
+    
+    <div class="skybox-status" id="skyboxStatus">
+        Estado del skybox: Cargando...
+    </div>
+
+    <div class="interaction-status" id="interactionStatus">
+        Interacción: Explora el Castillo de Osaka
+    </div>
+
+    <button class="back-button" onclick="goBack()">
+        🏠 Volver al Dashboard
+    </button>
+
+    <!-- Orientation Panel -->
+    <div class="orientation-panel" id="orientationPanel">
+        <h4>🧭 Orientación</h4>
+        <div id="orientationInfo">
+            <p>X: <span id="rotationX">0</span>°</p>
+            <p>Y: <span id="rotationY">0</span>°</p>
+            <p>Z: <span id="rotationZ">0</span>°</p>
+        </div>
+        <button onclick="toggleOrientationLogging()">📊 Log Orientación</button>
+        <button onclick="logCurrentOrientation()">📍 Log Actual</button>
+        <button onclick="resetCameraOrientation()">🔄 Reset Cámara</button>
+    </div>
+
+
+    <!-- Story Introduction -->
+    <div class="story-intro" id="storyIntro">
+        <h3>🏯 Historia del Castillo de Osaka</h3>
+        <p>Tu avatar guía te contará la fascinante historia de este monumento histórico.</p>
+        <p>Puedes voltear a ver el castillo mientras escuchas la historia.</p>
+        <button class="start-btn" onclick="startStory()">Comenzar Historia</button>
+    </div>
+
+    <!-- Story Progress Indicator -->
+    <div class="story-progress" id="storyProgress">
+        Historia: <span id="currentStep">1</span> de <span id="totalSteps">5</span>
+    </div>
+
+    <a-scene 
+        vr-mode-ui="enabled: false"
+        embedded
+        loading-screen="enabled: false">
+
+        <!-- Assets -->
+        <a-assets>
+            <img id="castleImage" src="../../assets/osaka-castle.jpg" crossorigin="anonymous">
+            <img id="castleImage2" src="../../assets/osaka-castle2.jpg" crossorigin="anonymous">
+            <img id="avatarImage" src="../../assets/avatar.png" crossorigin="anonymous">
+            <video id="transitionVideo" src="../../assets/osaka-castle-transition.mp4" crossorigin="anonymous" preload="auto" muted></video>
+        </a-assets>
+
+        <!-- Camera Rig - parent container for camera animation -->
+        <a-entity id="rig" rotation="0 0 0" position="0 0 0">
+            <a-entity id="camera" position="0 1.6 0" camera look-controls wasd-controls>
+                <a-cursor 
+                    id="cursor"
+                    color="#FFFFFF" 
+                    position="0 0 -1"
+                    geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
+                    material="color: #FFFFFF; shader: flat"
+                    raycaster="objects: .interactive, .movable, .castle-element">
+                </a-cursor>
+            </a-entity>
+        </a-entity>
+
+        <!-- Lighting - warm lighting for castle atmosphere -->
+        <a-light type="ambient" color="#ffd700" intensity="0.4"></a-light>
+        <a-light type="directional" position="0 10 5" color="#ffd700" intensity="0.6"></a-light>
+
+        <!-- Castle 360 Skybox -->
+        <a-sky id="skybox" src="#castleImage" rotation="0 0 0"></a-sky>
+
+        <!-- Transition Video 360 -->
+        <a-videosphere id="transitionSkybox" src="#transitionVideo" visible="false"></a-videosphere>
+
+        <!-- Avatar Guide (sin emoji en los datos para evitar problemas de renderizado en el recuadro negro) -->
+        <!-- Solo el avatar, sin recuadro negro -->
+        <a-image 
+            id="avatarGuide"
+            class="interactive movable" 
+            position="0 1.6 -2" 
+            width="0.8" 
+            height="0.8" 
+            src="#avatarImage"
+            data-name="Avatar Guia"
+            data-info="Avatar guía que te ayudará a explorar el Castillo de Osaka. Haz click para obtener información sobre la historia y arquitectura de este monumento histórico."
+            animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; dur: 200; loop: false"
+            animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false"
+            onclick="showObjectInfo(this)"
+            visible="true">
+        </a-image>
+        <!-- Solo el avatar, sin recuadro negro -->
+
+        <!-- 3D Dialogue System -->
+        <a-entity id="dialogue3D" position="0 2.8 -2" visible="false">
+            <!-- Dialogue Background -->
+            <a-plane 
+                id="dialogueBackground"
+                width="1" 
+                height="1" 
+                color="#ffffff" 
+                material="transparent: true; opacity: 0.95"
+                position="0 0 0">
+            </a-plane>
+            
+            <!-- Dialogue Border -->
+            <a-plane 
+                id="dialogueBorder"
+                width="1.5" 
+                height="1.5" 
+                color="#ffd700" 
+                material="transparent: true; opacity: 0.8"
+                position="0 0 -0.01">
+            </a-plane>
+            
+            <!-- Avatar Name -->
+            <a-text 
+                id="dialogueName"
+                value="Gato bebe" 
+                color="#8B4513" 
+                width="2.6" 
+                align="center" 
+                position="0 0.5 0.01"
+                font="kelsonsans">
+            </a-text>
+            
+            <!-- Dialogue Text -->
+            <a-text 
+                id="dialogueText3D"
+                value="" 
+                color="#333333" 
+                width="1.6" 
+                align="center" 
+                position="0 0.1 0.01"
+                wrap-count="25"
+                font="kelsonsans">
+            </a-text>
+            
+            <!-- Continue Button -->
+            <a-plane 
+                id="continueButton3D"
+                class="interactive"
+                width="0.7" 
+                height="0.18" 
+                color="#8B4513" 
+                position="0 -0.5 0.01"
+                onclick="nextDialogue3D()"
+                animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; dur: 200; loop: false"
+                animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false">
+            </a-plane>
+            
+            <a-text 
+                value="Continuar" 
+                color="#ffffff" 
+                width="0.6" 
+                align="center" 
+                position="0 -0.5 0.02"
+                font="kelsonsans">
+            </a-text>
+            
+            <!-- Advance Button (hidden by default) -->
+            <a-plane 
+                id="advanceButton3D"
+                class="interactive"
+                width="0.7" 
+                height="0.18" 
+                color="#ffd700" 
+                position="0 -0.7 0.01"
+                onclick="advanceToNextScene()"
+                visible="false"
+                animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; dur: 200; loop: false"
+                animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false">
+            </a-plane>
+            
+            <a-text 
+                id="advanceButtonText"
+                value="Avanzar" 
+                color="#333333" 
+                width="0.6" 
+                align="center" 
+                position="0 -0.7 0.02"
+                font="kelsonsans"
+                visible="false">
+            </a-text>
+        </a-entity>
+
+        <!-- Look at Castle Prompt -->
+        <a-entity id="lookPrompt" position="2 2 -3" visible="false">
+            <a-plane 
+                width="1.5" 
+                height="0.4" 
+                color="#ffd700" 
+                material="transparent: true; opacity: 0.9"
+                position="0 0 0">
+            </a-plane>
+            
+            <a-text 
+                value="👀 Mira el Castillo" 
+                color="#8B4513" 
+                width="1.3" 
+                align="center" 
+                position="0 0 0.01"
+                font="kelsonsans">
+            </a-text>
+        </a-entity>
+
+        <!-- Information Panel -->
+        <a-entity id="infoPanel" position="0 3 -3" visible="false">
+            <a-plane 
+                width="2" 
+                height="1" 
+                color="#000000" 
+                material="transparent: true; opacity: 0.9">
+            </a-plane>
+            <a-text 
+                id="infoTitle" 
+                value="" 
+                color="#ffffff" 
+                width="1.8" 
+                align="center" 
+                position="0 0.3 0.01">
+            </a-text>
+            <a-text 
+                id="infoText" 
+                value="" 
+                color="#ffffff" 
+                width="1.6" 
+                align="center" 
+                position="0 -0.2 0.01">
+            </a-text>
+        </a-entity>
+
+    </a-scene>
+
+    <script>
+        // Global variables
+        let currentObject = null;
+        let avatarAnimation = null;
+        let currentDialogueIndex = 0;
+        let isStoryActive = false;
+        
+        // Audio variables
+        let isMuted = false;
+        let isVoiceEnabled = true;
+        let speechRate = 1.0;
+        let currentSpeech = null;
+        
+        // Scene variables
+        let backgroundChanged = false;
+        
+        // Orientation variables
+        let isOrientationLogging = false;
+        let orientationInterval = null;
+        
+        // Initial camera orientation
+        const initialCameraRotation = { x: 18, y: 76.8, z: 0.00 };
+
+        // Animate camera rig to initial orientation
+        function animateCameraToInitialOrientation() {
+            const rig = document.getElementById('rig');
+            console.log('animateCameraToInitialOrientation called, rig found:', !!rig);
+            
+            if (rig) {
+                console.log('Current rig rotation before animation:', rig.getAttribute('rotation'));
+                
+                // Use the robust animation function
+                animateRotation(rig, {x: 0, y: 0, z: 0}, initialCameraRotation, 2000);
+                console.log('Camera rig animation started to:', initialCameraRotation);
+            } else {
+                console.error('Camera rig element not found!');
+            }
+        }
+
+        // Robust rotation animation function
+        function animateRotation(el, from, to, duration) {
+            const t0 = performance.now();
+            const tick = (t) => {
+                const k = Math.min((t - t0) / duration, 1);
+                const ease = 1 - Math.pow(1 - k, 3); // easeOutCubic
+                const rx = from.x + (to.x - from.x) * ease;
+                const ry = from.y + (to.y - from.y) * ease;
+                const rz = from.z + (to.z - from.z) * ease;
+                el.setAttribute('rotation', `${rx} ${ry} ${rz}`);
+                if (k < 1) {
+                    requestAnimationFrame(tick);
+                } else {
+                    console.log('Camera rig animation completed to:', to);
+                }
+            };
+            requestAnimationFrame(tick);
+        }
+        
+        // Story data for Osaka Castle
+        const castleStory = [
+            {
+                text: "¡Hola! Bienvenido al Castillo de Osaka. Soy tu guía virtual y te acompañaré en este viaje histórico.",
+                showLookPrompt: false
+            },
+            {
+                text: "¿Sabías que este castillo fue construido en 1583 por Toyotomi Hideyoshi? Fue el castillo más grande de Japón en su época.",
+                showLookPrompt: true
+            },
+            {
+                text: "Un dato curioso: el castillo original fue destruido por un rayo en 1615, pero fue reconstruido en 1620. ¡La naturaleza puede ser impredecible!",
+                showLookPrompt: true
+            },
+            {
+                text: "La torre principal que ves tiene 8 pisos y está cubierta con tejas doradas. ¡Era un símbolo de poder y riqueza!",
+                showLookPrompt: true
+            },
+            {
+                text: "Durante la Segunda Guerra Mundial, el castillo fue bombardeado, pero fue reconstruido en 1997. ¡Es un verdadero superviviente de la historia!",
+                showLookPrompt: true
+            },
+            {
+                text: "Ahora puedes explorar libremente. Haz click en mí si necesitas más información. ¡Disfruta tu visita al Castillo de Osaka!",
+                showLookPrompt: false
+            }
+        ];
+
+        // Hide loading when scene is ready
+        const sceneEl = document.querySelector('a-scene');
+        
+        sceneEl.addEventListener('loaded', function() {
+            console.log('A-Frame Osaka Castle scene loaded successfully!');
+            document.getElementById('loading').style.display = 'none';
+            
+            // Check skybox loading status
+            checkSkyboxStatus();
+            
+            // Add cursor events for click-based interaction
+            const cursor = document.querySelector('a-cursor');
+            if (cursor) {
+                cursor.addEventListener('mouseenter', function(event) {
+                    const intersectedObject = event.detail.intersectedEl;
+                    if (intersectedObject && intersectedObject.classList.contains('interactive')) {
+                        const name = intersectedObject.getAttribute('data-name');
+                        if (name) {
+                            document.getElementById('interactionStatus').textContent = `Click en: ${name}`;
+                        }
+                    }
+                });
+                
+                cursor.addEventListener('mouseleave', function() {
+                    document.getElementById('interactionStatus').textContent = 'Interacción: Explora el Castillo de Osaka';
+                });
+            }
+
+            // Ensure avatar is visible and start animation
+            setTimeout(() => {
+                const avatar = document.getElementById('avatarGuide');
+                if (avatar) {
+                    avatar.setAttribute('visible', 'true');
+                    console.log('Avatar visibility ensured on scene load');
+                    startAvatarAnimation();
+                    
+                    // Animate camera to initial orientation
+                    console.log('About to start camera animation...');
+                    setTimeout(() => {
+                        animateCameraToInitialOrientation();
+                    }, 500);
+                    
+                    // Show story introduction after a short delay
+                    setTimeout(() => {
+                        showStoryIntro();
+                    }, 2000);
+                } else {
+                    console.error('Avatar element not found!');
+                }
+            }, 1000);
+        });
+        
+        // Add image loading error handling
+        const castleImage = document.getElementById('castleImage');
+        if (castleImage) {
+            castleImage.addEventListener('load', function() {
+                console.log('Castle image loaded successfully');
+                checkSkyboxStatus();
+            });
+            
+            castleImage.addEventListener('error', function() {
+                console.error('Failed to load castle image');
+                document.getElementById('skyboxStatus').textContent = '❌ Skybox: Error al cargar imagen';
+                document.getElementById('skyboxStatus').style.color = '#ef4444';
+            });
+        }
+
+        // Function to check skybox loading status
+        function checkSkyboxStatus() {
+            const skybox = document.getElementById('skybox');
+            const statusEl = document.getElementById('skyboxStatus');
+            
+            if (skybox) {
+                // Check immediately and then after a delay
+                checkSkyboxImage();
+                
+                // Also check after a delay to ensure texture is fully loaded
+                setTimeout(checkSkyboxImage, 2000);
+            }
+            
+            function checkSkyboxImage() {
+                const skyboxEl = skybox.getObject3D('mesh');
+                if (skyboxEl && skyboxEl.material && skyboxEl.material.map && skyboxEl.material.map.image) {
+                    console.log('Castle skybox image loaded successfully');
+                    statusEl.textContent = '✅ Skybox: Imagen del Castillo de Osaka cargada';
+                    statusEl.style.color = '#10b981';
+                } else {
+                    console.log('Castle skybox image failed to load');
+                    statusEl.textContent = '⚠️ Skybox: Error al cargar imagen';
+                    statusEl.style.color = '#ef4444';
+                }
+            }
+        }
+
+        // Show object information
+        function showObjectInfo(element) {
+            console.log('showObjectInfo called with element:', element);
+            
+            const name = element.getAttribute('data-name');
+            const info = element.getAttribute('data-info');
+            
+            console.log('Object data - name:', name, 'info:', info);
+            
+            // Skip showing info panel for avatar guide
+            if (name === 'Avatar Guia' || name === 'Gato bebe') {
+                console.log('Avatar clicked - no info panel shown');
+                return;
+            }
+            
+            if (name && info) {
+                const infoPanel = document.getElementById('infoPanel');
+                const infoTitle = document.getElementById('infoTitle');
+                const infoText = document.getElementById('infoText');
+                
+                if (infoPanel && infoTitle && infoText) {
+                    infoTitle.setAttribute('value', name);
+                    infoText.setAttribute('value', info);
+                    infoPanel.setAttribute('visible', 'true');
+                    
+                    // Hide panel after 10 seconds
+                    setTimeout(() => {
+                        infoPanel.setAttribute('visible', 'false');
+                    }, 10000);
+                    
+                    console.log('Successfully showing info for:', name);
+                } else {
+                    console.error('Could not find info panel elements');
+                }
+            } else {
+                console.error('Missing name or info for element:', element);
+            }
+        }
+
+        // Start avatar animation
+        function startAvatarAnimation() {
+            let bounceTime = 0;
+            avatarAnimation = setInterval(() => {
+                const avatar = document.getElementById('avatarGuide');
+                if (avatar && avatar.getAttribute('visible') === 'true') {
+                    bounceTime += 0.08; // Slower animation
+                    // Create a gentle bouncing effect
+                    const bounceHeight = Math.sin(bounceTime) * 0.15; // Smaller bounce
+                    
+                    avatar.setAttribute('position', {
+                        x: 0,
+                        y: 1.6 + bounceHeight, // Base height (1.6) + bounce
+                        z: -2
+                    });
+                }
+            }, 100); // Slower update rate
+        }
+
+        // Show story introduction
+        function showStoryIntro() {
+            const storyIntro = document.getElementById('storyIntro');
+            if (storyIntro) {
+                storyIntro.classList.add('show');
+            }
+        }
+
+        // Start the castle story
+        function startStory() {
+            // Hide story intro
+            const storyIntro = document.getElementById('storyIntro');
+            if (storyIntro) {
+                storyIntro.classList.remove('show');
+            }
+            
+            if (isStoryActive) return;
+            
+            isStoryActive = true;
+            currentDialogueIndex = 0;
+            
+            // Show story progress and audio controls
+            const storyProgress = document.getElementById('storyProgress');
+            const totalSteps = document.getElementById('totalSteps');
+            const audioControls = document.getElementById('audioControls');
+            
+            if (storyProgress && totalSteps) {
+                totalSteps.textContent = castleStory.length;
+                storyProgress.style.display = 'block';
+            }
+            
+            if (audioControls) {
+                audioControls.classList.add('show');
+            }
+            
+            // Start first dialogue
+            showDialogue3D();
+        }
+
+        // Show current dialogue in 3D
+        function showDialogue3D() {
+            if (currentDialogueIndex >= castleStory.length) {
+                endStory();
+                return;
+            }
+            
+            const dialogue = castleStory[currentDialogueIndex];
+            const dialogue3D = document.getElementById('dialogue3D');
+            const dialogueText3D = document.getElementById('dialogueText3D');
+            const currentStep = document.getElementById('currentStep');
+            const lookPrompt = document.getElementById('lookPrompt');
+            
+            if (dialogue3D && dialogueText3D && currentStep) {
+                // Update progress
+                currentStep.textContent = currentDialogueIndex + 1;
+                
+                // Show dialogue 3D
+                dialogue3D.setAttribute('visible', 'true');
+                
+                // Show look prompt if needed
+                if (dialogue.showLookPrompt && lookPrompt) {
+                    lookPrompt.setAttribute('visible', 'true');
+                } else if (lookPrompt) {
+                    lookPrompt.setAttribute('visible', 'false');
+                }
+                
+                // Start avatar animation immediately
+                animateAvatarGesture();
+                
+                // Start speaking the text
+                speakText(dialogue.text);
+                
+                // Type out the text
+                typeText3D(dialogueText3D, dialogue.text, () => {
+                    // Animation continues while typing
+                    
+                    // Show advance button after 2nd dialogue (index 1)
+                    if (currentDialogueIndex === 1 && !backgroundChanged) {
+                        showAdvanceButton();
+                    }
+                });
+            }
+        }
+
+        // Type text effect for 3D
+        function typeText3D(element, text, callback) {
+            // Stop any existing typing animation
+            if (element.typingInterval) {
+                clearInterval(element.typingInterval);
+            }
+            
+            // Format text for better display
+            const formattedText = formatTextFor3D(text);
+            element.setAttribute('value', '');
+            let index = 0;
+            
+            element.typingInterval = setInterval(() => {
+                if (index < formattedText.length) {
+                    const currentText = element.getAttribute('value') + formattedText[index];
+                    element.setAttribute('value', currentText);
+                    index++;
+                } else {
+                    clearInterval(element.typingInterval);
+                    element.typingInterval = null;
+                    if (callback) callback();
+                }
+            }, 50); // Slower typing speed for better readability
+        }
+
+        // Format text for better 3D display
+        function formatTextFor3D(text) {
+            // Split long sentences into shorter lines
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+            const maxCharsPerLine = 22; // Reduced for smaller dialogue box
+            
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                
+                if (testLine.length <= maxCharsPerLine) {
+                    currentLine = testLine;
+                } else {
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+                    currentLine = word;
+                }
+            }
+            
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+            
+            return lines.join('\n');
+        }
+
+        // Animate avatar gesture
+        function animateAvatarGesture() {
+            const avatar = document.getElementById('avatarGuide');
+            if (avatar) {
+                // Stop any existing talking animation
+                if (avatar.talkingAnimation) {
+                    clearInterval(avatar.talkingAnimation);
+                }
+                
+                // Add jumping animation while talking
+                let jumpTime = 0;
+                const originalY = 1.6;
+                
+                avatar.talkingAnimation = setInterval(() => {
+                    jumpTime += 0.15;
+                    const jumpHeight = Math.sin(jumpTime) * 0.1; // Small jump
+                    const scale = 1.0 + Math.sin(jumpTime * 1.5) * 0.05; // Slight scale variation
+                    
+                    avatar.setAttribute('position', {
+                        x: 0,
+                        y: originalY + jumpHeight,
+                        z: -2
+                    });
+                    
+                    avatar.setAttribute('scale', {
+                        x: scale,
+                        y: scale,
+                        z: scale
+                    });
+                }, 100);
+                
+                // Stop animation after 5 seconds (longer duration)
+                setTimeout(() => {
+                    if (avatar.talkingAnimation) {
+                        clearInterval(avatar.talkingAnimation);
+                        avatar.talkingAnimation = null;
+                        
+                        // Reset to original position and scale
+                        avatar.setAttribute('position', {
+                            x: 0,
+                            y: originalY,
+                            z: -2
+                        });
+                        
+                        avatar.setAttribute('scale', {
+                            x: 1,
+                            y: 1,
+                            z: 1
+                        });
+                    }
+                }, 5000);
+            }
+        }
+
+        // Show advance button
+        function showAdvanceButton() {
+            const advanceButton3D = document.getElementById('advanceButton3D');
+            const advanceButtonText = document.getElementById('advanceButtonText');
+            const continueButton3D = document.getElementById('continueButton3D');
+            const continueButtonText = document.querySelector('a-text[value="Continuar"]');
+            
+            if (advanceButton3D && advanceButtonText) {
+                advanceButton3D.setAttribute('visible', 'true');
+                advanceButtonText.setAttribute('visible', 'true');
+            }
+            
+            // Hide continue button
+            if (continueButton3D && continueButtonText) {
+                continueButton3D.setAttribute('visible', 'false');
+                continueButtonText.setAttribute('visible', 'false');
+            }
+        }
+
+        // Hide advance button
+        function hideAdvanceButton() {
+            const advanceButton3D = document.getElementById('advanceButton3D');
+            const advanceButtonText = document.getElementById('advanceButtonText');
+            const continueButton3D = document.getElementById('continueButton3D');
+            const continueButtonText = document.querySelector('a-text[value="Continuar"]');
+            
+            if (advanceButton3D && advanceButtonText) {
+                advanceButton3D.setAttribute('visible', 'false');
+                advanceButtonText.setAttribute('visible', 'false');
+            }
+            
+            // Show continue button
+            if (continueButton3D && continueButtonText) {
+                continueButton3D.setAttribute('visible', 'true');
+                continueButtonText.setAttribute('visible', 'true');
+            }
+        }
+
+        // Advance to next scene (play transition video)
+        function advanceToNextScene() {
+            // Stop current speech
+            stopSpeech();
+            
+            // Stop avatar talking animation
+            const avatar = document.getElementById('avatarGuide');
+            if (avatar && avatar.talkingAnimation) {
+                clearInterval(avatar.talkingAnimation);
+                avatar.talkingAnimation = null;
+            }
+            
+            // Hide dialogue
+            const dialogue3D = document.getElementById('dialogue3D');
+            if (dialogue3D) {
+                dialogue3D.setAttribute('visible', 'false');
+            }
+            
+            // Hide advance button
+            hideAdvanceButton();
+            
+            // Play transition video
+            playTransitionVideo();
+        }
+
+        // Play transition video
+        function playTransitionVideo() {
+            const skybox = document.getElementById('skybox');
+            const transitionSkybox = document.getElementById('transitionSkybox');
+            const transitionVideo = document.getElementById('transitionVideo');
+            
+            if (skybox && transitionSkybox && transitionVideo) {
+                // Hide original skybox
+                skybox.setAttribute('visible', 'false');
+                
+                // Show transition video skybox
+                transitionSkybox.setAttribute('visible', 'true');
+                
+                // Remove any existing event listeners to avoid duplicates
+                transitionVideo.removeEventListener('ended', handleVideoEnd);
+                
+                // Add event listener for when video ends
+                transitionVideo.addEventListener('ended', handleVideoEnd);
+                
+                // Reset video to beginning and play
+                transitionVideo.currentTime = 0;
+                transitionVideo.loop = false; // Ensure no loop
+                
+                transitionVideo.play().then(() => {
+                    console.log('Transition video started playing');
+                }).catch((error) => {
+                    console.error('Error playing transition video:', error);
+                    
+                    // Fallback: change background directly if video fails
+                    handleVideoEnd();
+                });
+            }
+        }
+
+        // Handle video end
+        function handleVideoEnd() {
+            console.log('Transition video ended');
+            
+            const skybox = document.getElementById('skybox');
+            const transitionSkybox = document.getElementById('transitionSkybox');
+            const transitionVideo = document.getElementById('transitionVideo');
+            
+            // Hide transition video
+            if (transitionSkybox) {
+                transitionSkybox.setAttribute('visible', 'false');
+            }
+            
+            // Change to scene 2 background using a-sky syntax
+            if (skybox) {
+                skybox.setAttribute('src', '#castleImage2');
+                skybox.setAttribute('rotation', '2.41 -39.08 0'); // Maintain same orientation
+                skybox.setAttribute('visible', 'true');
+            }
+            
+            backgroundChanged = true;
+            
+            // Continue with next dialogue
+            setTimeout(() => {
+                currentDialogueIndex++;
+                showDialogue3D();
+            }, 500);
+        }
+
+        // Next dialogue in 3D
+        function nextDialogue3D() {
+            // Stop current speech
+            stopSpeech();
+            
+            // Stop avatar talking animation
+            const avatar = document.getElementById('avatarGuide');
+            if (avatar && avatar.talkingAnimation) {
+                clearInterval(avatar.talkingAnimation);
+                avatar.talkingAnimation = null;
+                
+                // Reset avatar to original position and scale
+                avatar.setAttribute('position', {
+                    x: 0,
+                    y: 1.6,
+                    z: -2
+                });
+                
+                avatar.setAttribute('scale', {
+                    x: 1,
+                    y: 1,
+                    z: 1
+                });
+            }
+            
+            // Stop any typing animation
+            const dialogueText3D = document.getElementById('dialogueText3D');
+            if (dialogueText3D && dialogueText3D.typingInterval) {
+                clearInterval(dialogueText3D.typingInterval);
+                dialogueText3D.typingInterval = null;
+            }
+            
+            const dialogue3D = document.getElementById('dialogue3D');
+            if (dialogue3D) {
+                dialogue3D.setAttribute('visible', 'false');
+            }
+            
+            currentDialogueIndex++;
+            
+            // Show next dialogue after a short delay
+            setTimeout(() => {
+                showDialogue3D();
+            }, 500);
+        }
+
+        // Text-to-Speech functions
+        function speakText(text) {
+            if (!isVoiceEnabled || isMuted) return;
+            
+            // Stop any current speech
+            stopSpeech();
+            
+            // Check if browser supports speech synthesis
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                // Configure voice settings
+                utterance.rate = speechRate;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+                
+                // Try to use Spanish voice
+                const voices = speechSynthesis.getVoices();
+                const spanishVoice = voices.find(voice => 
+                    voice.lang.startsWith('es') || 
+                    voice.name.includes('Spanish') ||
+                    voice.name.includes('Español')
+                );
+                
+                if (spanishVoice) {
+                    utterance.voice = spanishVoice;
+                }
+                
+                // Store current speech for control
+                currentSpeech = utterance;
+                
+                // Speak the text
+                speechSynthesis.speak(utterance);
+                
+                console.log('Speaking:', text);
+            } else {
+                console.warn('Speech synthesis not supported');
+            }
+        }
+
+        function stopSpeech() {
+            if (currentSpeech) {
+                speechSynthesis.cancel();
+                currentSpeech = null;
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const muteBtn = document.getElementById('muteBtn');
+            
+            if (isMuted) {
+                muteBtn.textContent = '🔊 Activar';
+                stopSpeech();
+            } else {
+                muteBtn.textContent = '🔇 Silenciar';
+            }
+        }
+
+        function toggleVoice() {
+            isVoiceEnabled = !isVoiceEnabled;
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            if (isVoiceEnabled) {
+                voiceBtn.textContent = '👤 Voz';
+                voiceBtn.classList.add('active');
+            } else {
+                voiceBtn.textContent = '🔇 Sin Voz';
+                voiceBtn.classList.remove('active');
+                stopSpeech();
+            }
+        }
+
+        function changeSpeed(value) {
+            speechRate = parseFloat(value);
+            const speedValue = document.getElementById('speedValue');
+            if (speedValue) {
+                speedValue.textContent = speechRate.toFixed(1);
+            }
+        }
+
+        // End story
+        function endStory() {
+            isStoryActive = false;
+            
+            // Stop any current speech
+            stopSpeech();
+            
+            // Hide dialogue 3D
+            const dialogue3D = document.getElementById('dialogue3D');
+            if (dialogue3D) {
+                dialogue3D.setAttribute('visible', 'false');
+            }
+            
+            // Hide look prompt
+            const lookPrompt = document.getElementById('lookPrompt');
+            if (lookPrompt) {
+                lookPrompt.setAttribute('visible', 'false');
+            }
+            
+            // Hide story progress and audio controls
+            const storyProgress = document.getElementById('storyProgress');
+            const audioControls = document.getElementById('audioControls');
+            
+            if (storyProgress) {
+                storyProgress.style.display = 'none';
+            }
+            
+            if (audioControls) {
+                audioControls.classList.remove('show');
+            }
+            
+            // Update interaction status
+            document.getElementById('interactionStatus').textContent = 'Interacción: Haz click en el avatar para más información';
+            
+            console.log('Castle story completed');
+        }
+
+        // Go back to dashboard
+        function goBack() {
+            // Stop avatar animation
+            if (avatarAnimation) {
+                clearInterval(avatarAnimation);
+            }
+            
+            // Stop any current speech
+            stopSpeech();
+            
+            // Show loading state
+            const backButton = document.querySelector('.back-button');
+            if (backButton) {
+                const originalText = backButton.innerHTML;
+                backButton.innerHTML = '🔄 Cargando...';
+                backButton.disabled = true;
+            }
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = '../dashboard.html';
+            }, 1000);
+        }
+
+        // Orientation functions
+        function toggleOrientationLogging() {
+            isOrientationLogging = !isOrientationLogging;
+            const orientationPanel = document.getElementById('orientationPanel');
+            
+            if (isOrientationLogging) {
+                // Show panel and start logging
+                if (orientationPanel) {
+                    orientationPanel.classList.add('show');
+                }
+                startOrientationLogging();
+            } else {
+                // Hide panel and stop logging
+                if (orientationPanel) {
+                    orientationPanel.classList.remove('show');
+                }
+                stopOrientationLogging();
+            }
+        }
+
+        function startOrientationLogging() {
+            if (orientationInterval) {
+                clearInterval(orientationInterval);
+            }
+            
+            orientationInterval = setInterval(() => {
+                updateOrientationDisplay();
+            }, 100); // Update every 100ms
+        }
+
+        function stopOrientationLogging() {
+            if (orientationInterval) {
+                clearInterval(orientationInterval);
+                orientationInterval = null;
+            }
+        }
+
+        function updateOrientationDisplay() {
+            const rig = document.getElementById('rig');
+            if (rig) {
+                const rotation = rig.getAttribute('rotation');
+                if (rotation) {
+                    const rotationX = document.getElementById('rotationX');
+                    const rotationY = document.getElementById('rotationY');
+                    const rotationZ = document.getElementById('rotationZ');
+                    
+                    if (rotationX) rotationX.textContent = rotation.x.toFixed(1);
+                    if (rotationY) rotationY.textContent = rotation.y.toFixed(1);
+                    if (rotationZ) rotationZ.textContent = rotation.z.toFixed(1);
+                }
+            }
+        }
+
+        function logCurrentOrientation() {
+            const rig = document.getElementById('rig');
+            const camera = document.getElementById('camera');
+            if (rig && camera) {
+                const rigRotation = rig.getAttribute('rotation');
+                const cameraRotation = camera.getAttribute('rotation');
+                const position = camera.getAttribute('position');
+                
+                console.log('=== ORIENTACIÓN ACTUAL ===');
+                console.log('Rig Rotación X:', rigRotation.x.toFixed(2));
+                console.log('Rig Rotación Y:', rigRotation.y.toFixed(2));
+                console.log('Rig Rotación Z:', rigRotation.z.toFixed(2));
+                console.log('Camera Rotación X:', cameraRotation.x.toFixed(2));
+                console.log('Camera Rotación Y:', cameraRotation.y.toFixed(2));
+                console.log('Camera Rotación Z:', cameraRotation.z.toFixed(2));
+                console.log('Posición X:', position.x.toFixed(2));
+                console.log('Posición Y:', position.y.toFixed(2));
+                console.log('Posición Z:', position.z.toFixed(2));
+                console.log('========================');
+                
+                // Copy to clipboard if possible
+                const orientationText = `Rig Rotación: X=${rigRotation.x.toFixed(2)}, Y=${rigRotation.y.toFixed(2)}, Z=${rigRotation.z.toFixed(2)}`;
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(orientationText);
+                    console.log('Orientación copiada al portapapeles');
+                }
+            }
+        }
+
+        function resetCameraOrientation() {
+            const rig = document.getElementById('rig');
+            if (rig) {
+                rig.setAttribute('rotation', '0 0 0');
+                console.log('Camera rig reseteado a orientación inicial');
+            }
+        }
+
+        // Make functions global
+        window.goBack = goBack;
+        window.showObjectInfo = showObjectInfo;
+        window.nextDialogue3D = nextDialogue3D;
+        window.startStory = startStory;
+        window.toggleMute = toggleMute;
+        window.toggleVoice = toggleVoice;
+        window.changeSpeed = changeSpeed;
+        window.advanceToNextScene = advanceToNextScene;
+        window.toggleOrientationLogging = toggleOrientationLogging;
+        window.logCurrentOrientation = logCurrentOrientation;
+        window.resetCameraOrientation = resetCameraOrientation;
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                goBack();
+            } else if (event.key === 'o' || event.key === 'O') {
+                // Toggle orientation logging with 'O' key
+                toggleOrientationLogging();
+            } else if (event.key === 'l' || event.key === 'L') {
+                // Log current orientation with 'L' key
+                logCurrentOrientation();
+            }
+        });
+
+        // Load voices when page loads
+        window.addEventListener('load', function() {
+            // Load voices for speech synthesis
+            if ('speechSynthesis' in window) {
+                speechSynthesis.getVoices();
+                
+                // Some browsers need this event to load voices
+                speechSynthesis.addEventListener('voiceschanged', function() {
+                    console.log('Voices loaded:', speechSynthesis.getVoices().length);
+                });
+            }
+        });
+
+        console.log('A-Frame Osaka Castle page loaded successfully!');
+    </script>
+</body>
+</html>

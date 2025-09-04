@@ -131,6 +131,19 @@
             z-index: 1000;
         }
         
+        .video-status {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+        }
+        
+        
 
     </style>
 </head>
@@ -152,7 +165,7 @@
          <p><strong>Teclado:</strong> WASD para moverte</p>
          <p><strong>Ratón:</strong> Click y arrastrar para mirar</p>
          <p><strong>Interacción:</strong> Click en objetos</p>
-         <p><strong>Video 360°:</strong> Click en Unitree Go2</p>
+         <p><strong>Video 360°:</strong> Click en el botón verde tras seleccionar Unitree Go2</p>
          <p><strong>Volver:</strong> ESC o click en botón rojo</p>
 
      </div>
@@ -165,13 +178,18 @@
         Interacción: Haz click en los objetos
     </div>
 
+    <div class="video-status" id="videoStatus">
+        Video 360°: Cargando...
+    </div>
+
+
 
 
     <div class="video-overlay" id="videoOverlay">
         <button class="close-video" onclick="closeVideo()">✕ Cerrar</button>
         <div class="video-container">
             <video id="robotVideo" controls>
-                <source src="https://ikan-bucket.s3.us-east-2.amazonaws.com/go2.mp4" type="video/mp4">
+                <source src="../../assets/go2.mp4" type="video/mp4">
                 Tu navegador no soporta video.
             </video>
         </div>
@@ -184,16 +202,24 @@
 
         <!-- Assets -->
         <a-assets>
-            <img id="labImage" src="https://ikan-bucket.s3.us-east-2.amazonaws.com/mirai_lab.jpg" crossorigin="anonymous">
-            <img id="avatarImage" src="https://ikan-bucket.s3.us-east-2.amazonaws.com/avatar.png" crossorigin="anonymous">
-            <video id="video360" src="https://ikan-bucket.s3.us-east-2.amazonaws.com/go2.mp4"
-                   crossorigin="anonymous" playsinline webkit-playsinline
-                   preload="auto"></video>
+            <img id="labImage" src="../../assets/mirai_lab.jpg" crossorigin="anonymous">
+            <img id="avatarImage" src="../../assets/avatar.png" crossorigin="anonymous">
+            <video id="video360" 
+                   crossorigin="anonymous" 
+                   playsinline 
+                   webkit-playsinline
+                   preload="metadata"
+                   muted
+                   loop>
+                <source src="../../assets/go2.mp4" type="video/mp4">
+                Tu navegador no soporta video HTML5.
+            </video>
         </a-assets>
 
         <!-- Camera with basic controls -->
         <a-entity id="camera" position="0 1.6 0" camera look-controls wasd-controls>
             <a-cursor 
+                id="cursor"
                 color="#FFFFFF" 
                 position="0 0 -1"
                 geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
@@ -222,6 +248,8 @@
             color="#ffffff"
             data-name="Pepper Robot"
             data-info="Robot humanoide Pepper de SoftBank Robotics. Diseñado para interacción social y asistencia en entornos comerciales y educativos."
+            animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; stopEvents: mouseleave; dur: 200; loop: false"
+            animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false"
             onclick="showObjectInfo(this)">
         </a-box>
 
@@ -235,6 +263,8 @@
             color="#808080"
             data-name="Unitree Go2"
             data-info="Robot cuadrúpedo Unitree Go2. Robot perro de alta movilidad diseñado para investigación en locomoción, exploración y asistencia. Equipado con sensores avanzados y control de movimiento preciso."
+            animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; stopEvents: mouseleave; dur: 200; loop: false"
+            animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false"
             onclick="showObjectInfo(this)">
         </a-box>
 
@@ -248,6 +278,8 @@
             src="#avatarImage"
             data-name="Avatar Guía"
             data-info="Avatar guía que te ayudará a navegar por el laboratorio. Haz click para obtener información sobre los robots y equipos."
+            animation__hover="property: scale; to: 1.1 1.1 1.1; startEvents: mouseenter; stopEvents: mouseleave; dur: 200; loop: false"
+            animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false"
             onclick="showObjectInfo(this)"
             visible="true">
         </a-image>
@@ -288,6 +320,8 @@
              depth="0.1" 
              color="#00ff00"
              visible="false"
+             animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; stopEvents: mouseleave; dur: 200; loop: false"
+             animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false"
              onclick="playVideo360()">
          </a-box>
          
@@ -304,6 +338,8 @@
               depth="0.1" 
               color="#ff0000"
               visible="false"
+              animation__hover="property: scale; to: 1.2 1.2 1.2; startEvents: mouseenter; stopEvents: mouseleave; dur: 200; loop: false"
+              animation__hoverout="property: scale; to: 1 1 1; startEvents: mouseleave; dur: 200; loop: false"
               onclick="backToLab()">
           </a-box>
 
@@ -325,6 +361,9 @@
             // Check skybox loading status
             checkSkyboxStatus();
             
+            // Initialize video loading
+            initializeVideo();
+            
             // Ensure avatar is visible
             setTimeout(() => {
                 const avatar = document.getElementById('avatarGuide');
@@ -338,15 +377,15 @@
                 }
             }, 1000);
             
-            // Add cursor events for better interaction feedback
+            // Add cursor events for click-based interaction
             const cursor = document.querySelector('a-cursor');
             if (cursor) {
                 cursor.addEventListener('mouseenter', function(event) {
                     const intersectedObject = event.detail.intersectedEl;
-                    if (intersectedObject) {
+                    if (intersectedObject && intersectedObject.classList.contains('interactive')) {
                         const name = intersectedObject.getAttribute('data-name');
                         if (name) {
-                            document.getElementById('interactionStatus').textContent = `Interacción: Click en ${name}`;
+                            document.getElementById('interactionStatus').textContent = `Click en: ${name}`;
                         }
                     }
                 });
@@ -370,6 +409,68 @@
                 document.getElementById('skyboxStatus').textContent = '❌ Skybox: Error al cargar imagen';
                 document.getElementById('skyboxStatus').style.color = '#ef4444';
             });
+        }
+
+
+        // Initialize video with proper error handling
+        function initializeVideo() {
+            const videoEl = document.getElementById('video360');
+            const videoStatus = document.getElementById('videoStatus');
+            
+            if (!videoEl) {
+                console.error('Video element not found');
+                if (videoStatus) {
+                    videoStatus.textContent = '❌ Video 360°: Elemento no encontrado';
+                    videoStatus.style.color = '#ef4444';
+                }
+                return;
+            }
+
+            // Set up video event listeners
+            videoEl.addEventListener('loadstart', function() {
+                console.log('Video loading started');
+                if (videoStatus) {
+                    videoStatus.textContent = '🔄 Video 360°: Cargando...';
+                    videoStatus.style.color = '#f59e0b';
+                }
+            });
+
+            videoEl.addEventListener('loadedmetadata', function() {
+                console.log('Video metadata loaded successfully');
+                console.log('Video duration:', videoEl.duration, 'seconds');
+                if (videoStatus) {
+                    videoStatus.textContent = '✅ Video 360°: Listo para reproducir';
+                    videoStatus.style.color = '#10b981';
+                }
+            });
+
+            videoEl.addEventListener('canplay', function() {
+                console.log('Video can start playing');
+                if (videoStatus) {
+                    videoStatus.textContent = '▶️ Video 360°: Listo para reproducir';
+                    videoStatus.style.color = '#10b981';
+                }
+            });
+
+            videoEl.addEventListener('error', function(e) {
+                console.error('Video loading error:', e);
+                console.error('Video error details:', videoEl.error);
+                if (videoStatus) {
+                    videoStatus.textContent = '❌ Video 360°: Error al cargar';
+                    videoStatus.style.color = '#ef4444';
+                }
+            });
+
+            videoEl.addEventListener('stalled', function() {
+                console.warn('Video loading stalled');
+                if (videoStatus) {
+                    videoStatus.textContent = '⏸️ Video 360°: Carga pausada';
+                    videoStatus.style.color = '#f59e0b';
+                }
+            });
+
+            // Try to load the video
+            videoEl.load();
         }
 
         // Function to check skybox loading status
@@ -436,6 +537,7 @@
                     if (name === 'Unitree Go2' && videoButton) {
                         videoButton.setAttribute('visible', 'true');
                         console.log('Video button made visible for Unitree Go2');
+                        document.getElementById('interactionStatus').textContent = 'Click en el botón verde para ver el video 360°';
                     } else if (videoButton) {
                         videoButton.setAttribute('visible', 'false');
                     }
@@ -447,6 +549,7 @@
                             if (videoButton) {
                                 videoButton.setAttribute('visible', 'false');
                             }
+                            document.getElementById('interactionStatus').textContent = 'Interacción: Haz click en los objetos';
                         }, 10000);
                     }
                     
@@ -459,57 +562,95 @@
             }
         }
 
-                                                                     // Play 360 video function
-           function playVideo360() {
-               const labSky = document.getElementById('skybox');
-               const sphere = document.getElementById('videoSphere');
-               const videoEl = document.getElementById('video360');
-               const backBtn = document.getElementById('backToLabButton');
-               const camera = document.querySelector('#camera');
-               
-               // Captura la orientación actual de la cámara
-               const cameraRotation = camera.getAttribute('rotation');
-               
-               // Cambia a modo video 360
-               labSky.setAttribute('visible', 'false');
-               sphere.setAttribute('visible', 'true');
-               backBtn.setAttribute('visible', 'true');
-               
-                               // Ajusta la rotación del videosphere para mantener la orientación de la cámara
-                // Esto hace que el video se oriente hacia donde estaba mirando la cámara
-                const sphereRotation = {
-                    x: 0,
-                    y: 180 + cameraRotation.y, // 180° base + rotación de la cámara
-                    z: 0
-                };
-                sphere.setAttribute('rotation', sphereRotation);
-               
-               // Forzar condiciones de autoplay: muted + playsinline
-               try { videoEl.muted = true; } catch (e) {}
-               videoEl.setAttribute('muted', 'true');
-               videoEl.setAttribute('playsinline', 'true');
-               videoEl.setAttribute('webkit-playsinline', 'true');
+        // Play 360 video function with improved error handling
+        function playVideo360() {
+            const labSky = document.getElementById('skybox');
+            const sphere = document.getElementById('videoSphere');
+            const videoEl = document.getElementById('video360');
+            const backBtn = document.getElementById('backToLabButton');
+            const camera = document.querySelector('#camera');
+            
+            // Check if video is ready
+            if (!videoEl || videoEl.readyState === 0) {
+                console.error('Video not ready to play');
+                document.getElementById('interactionStatus').textContent = '❌ Video no está listo para reproducir';
+                document.getElementById('interactionStatus').style.color = '#ef4444';
+                return;
+            }
+            
+            // Captura la orientación actual de la cámara
+            const cameraRotation = camera.getAttribute('rotation');
+            
+            // Cambia a modo video 360
+            labSky.setAttribute('visible', 'false');
+            sphere.setAttribute('visible', 'true');
+            backBtn.setAttribute('visible', 'true');
+            
+            // Ajusta la rotación del videosphere para mantener la orientación de la cámara
+            const sphereRotation = {
+                x: 0,
+                y: 180 + cameraRotation.y, // 180° base + rotación de la cámara
+                z: 0
+            };
+            sphere.setAttribute('rotation', sphereRotation);
+           
+            // Ensure video is properly configured for autoplay
+            videoEl.muted = true;
+            videoEl.setAttribute('muted', 'true');
+            videoEl.setAttribute('playsinline', 'true');
+            videoEl.setAttribute('webkit-playsinline', 'true');
+            videoEl.setAttribute('autoplay', 'true');
 
-               // Intenta reproducir el <video> real
-               videoEl.play().then(() => {
-                   document.getElementById('interactionStatus').textContent =
-                       'Video 360°: Mira alrededor moviendo el cursor';
-                   console.log('Playing 360 video with camera orientation:', cameraRotation);
-               }).catch(err => {
-                   console.warn('Autoplay bloqueo:', err);
-                   const status = document.getElementById('interactionStatus');
-                   status.textContent = 'Toca o haz click para iniciar el video 360°';
-                   const resumePlayback = () => {
-                       videoEl.play().then(() => {
-                           status.textContent = 'Video 360°: Mira alrededor moviendo el cursor';
-                       }).catch(e2 => {
-                           console.warn('Segundo intento de reproducción falló:', e2);
-                       });
-                   };
-                   document.body.addEventListener('click', resumePlayback, { once: true });
-                   document.body.addEventListener('touchend', resumePlayback, { once: true });
-               });
-           }
+            // Reset video to beginning
+            videoEl.currentTime = 0;
+
+            // Attempt to play the video
+            const playPromise = videoEl.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    document.getElementById('interactionStatus').textContent = 'Video 360°: Mira alrededor moviendo el cursor';
+                    document.getElementById('interactionStatus').style.color = '#10b981';
+                    console.log('Playing 360 video with camera orientation:', cameraRotation);
+                }).catch(err => {
+                    console.warn('Autoplay bloqueado:', err);
+                    const status = document.getElementById('interactionStatus');
+                    status.textContent = '👆 Toca o haz click para iniciar el video 360°';
+                    status.style.color = '#f59e0b';
+                    
+                    // Add user interaction handlers
+                    const resumePlayback = () => {
+                        videoEl.play().then(() => {
+                            status.textContent = 'Video 360°: Mira alrededor moviendo el cursor';
+                            status.style.color = '#10b981';
+                            console.log('Video started after user interaction');
+                        }).catch(e2 => {
+                            console.error('Segundo intento de reproducción falló:', e2);
+                            status.textContent = '❌ Error al reproducir video 360°';
+                            status.style.color = '#ef4444';
+                        });
+                    };
+                    
+                    // Remove existing listeners first
+                    document.body.removeEventListener('click', resumePlayback);
+                    document.body.removeEventListener('touchend', resumePlayback);
+                    
+                    // Add new listeners
+                    document.body.addEventListener('click', resumePlayback, { once: true });
+                    document.body.addEventListener('touchend', resumePlayback, { once: true });
+                });
+            } else {
+                // Fallback for older browsers
+                console.log('Video play promise not supported, using direct play');
+                try {
+                    videoEl.play();
+                    document.getElementById('interactionStatus').textContent = 'Video 360°: Mira alrededor moviendo el cursor';
+                } catch (err) {
+                    console.error('Direct play failed:', err);
+                    document.getElementById('interactionStatus').textContent = '❌ Error al reproducir video 360°';
+                }
+            }
+        }
           
           // Back to lab function
           function backToLab() {
@@ -567,6 +708,7 @@
          window.playVideo360 = playVideo360;
          window.backToLab = backToLab;
          window.closeVideo = closeVideo;
+         window.initializeVideo = initializeVideo;
 
 
                            // Add keyboard shortcuts
