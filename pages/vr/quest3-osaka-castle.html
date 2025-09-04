@@ -191,11 +191,12 @@
           }
         );
 
-        // Avatar Guía (representado como un cubo dorado)
-        const avatarGeometry = new THREE.BoxGeometry(0.3, 0.6, 0.2);
-        const avatarMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700 });
-        const avatar = new THREE.Mesh(avatarGeometry, avatarMaterial);
-        avatar.position.set(0, 0.8, -2);
+        // Avatar Guía como sprite (avatar.png) mirando siempre a la cámara
+        const avatarTexture = new THREE.TextureLoader().load('../../assets/avatar.png');
+        const avatarMaterial = new THREE.SpriteMaterial({ map: avatarTexture, color: 0xffffff });
+        const avatar = new THREE.Sprite(avatarMaterial);
+        avatar.scale.set(0.8, 0.8, 1); // tamaño visible
+        avatar.position.set(0, 1.2, -2);
         avatar.userData = {
           name: 'Avatar Guía',
           info: 'Tu guía virtual del Castillo de Osaka. Haz click para comenzar la historia interactiva.',
@@ -203,7 +204,7 @@
         };
         scene.add(avatar);
 
-        // Solo el avatar es interactivo
+        // Solo el avatar y botones de historia son interactivos
         const interactables = [avatar];
 
         // Variables para interacción
@@ -561,26 +562,33 @@
           }
           
           if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = speechRate;
-            utterance.pitch = 1.0;
-            utterance.volume = 0.8;
-            
-            // Intentar usar voz en español
-            const voices = speechSynthesis.getVoices();
-            const spanishVoice = voices.find(voice => 
-              voice.lang.startsWith('es') || 
-              voice.name.includes('Spanish') ||
-              voice.name.includes('Español')
-            );
-            
-            if (spanishVoice) {
-              utterance.voice = spanishVoice;
-            }
-            
-            currentSpeech = utterance;
-            speechSynthesis.speak(utterance);
-            debug('Reproduciendo audio: ' + text.substring(0, 30) + '...');
+            const ensureVoices = () => new Promise(resolve => {
+              const v = speechSynthesis.getVoices();
+              if (v && v.length) return resolve(v);
+              speechSynthesis.onvoiceschanged = () => resolve(speechSynthesis.getVoices());
+              setTimeout(() => resolve(speechSynthesis.getVoices()), 500);
+            });
+
+            ensureVoices().then(voices => {
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.rate = speechRate;
+              utterance.pitch = 1.0;
+              utterance.volume = 0.9;
+
+              const spanishVoice = voices.find(voice => 
+                (voice.lang && voice.lang.toLowerCase().startsWith('es')) || 
+                (voice.name && (voice.name.includes('Spanish') || voice.name.includes('Español')))
+              );
+              if (spanishVoice) utterance.voice = spanishVoice;
+
+              currentSpeech = utterance;
+              try {
+                speechSynthesis.speak(utterance);
+                debug('Reproduciendo audio: ' + text.substring(0, 30) + '...');
+              } catch (e) {
+                debug('Error TTS: ' + e.message);
+              }
+            });
           }
         }
 
@@ -687,6 +695,18 @@
 
         // Variable para controlar la animación
         let animationId = null;
+
+        // Desbloquear audio/TTS en el primer gesto del usuario (requisito en Quest/Chromium)
+        const unlockAudioOnce = () => {
+          try { speechSynthesis.cancel(); } catch(e) {}
+          window.removeEventListener('click', unlockAudioOnce);
+          controller1.removeEventListener('selectstart', unlockAudioOnce);
+          controller2.removeEventListener('selectstart', unlockAudioOnce);
+          debug('Audio/TTS desbloqueado por interacción del usuario');
+        };
+        window.addEventListener('click', unlockAudioOnce, { once: true });
+        controller1.addEventListener('selectstart', unlockAudioOnce, { once: true });
+        controller2.addEventListener('selectstart', unlockAudioOnce, { once: true });
 
         // Agregar eventos a ambos controladores
         controller1.addEventListener('selectstart', onSelectStart);

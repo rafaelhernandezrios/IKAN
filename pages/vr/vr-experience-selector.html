@@ -284,8 +284,12 @@
                 
                 // Determinar la experiencia basada en la ubicación seleccionada
                 if (selectedLocation === 'osaka-industry') {
-                    // Para el Castillo de Osaka, usar la experiencia específica
-                    targetUrl = 'aframe-osaka-castle.html';
+                    // Para el Castillo de Osaka, usar la experiencia específica según dispositivo
+                    if (experienceType === 'vr') {
+                        targetUrl = 'quest3-osaka-castle.html';
+                    } else {
+                        targetUrl = 'aframe-osaka-castle.html';
+                    }
                 } else {
                     // Para otras ubicaciones, usar la experiencia del laboratorio
                     switch(experienceType) {
